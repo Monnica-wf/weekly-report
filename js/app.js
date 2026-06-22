@@ -167,7 +167,7 @@ class WeeklyReportApp {
         document.getElementById('itemEndDate').value = item?.endDate || '';
 
         // 设置颜色
-        const colorValue = item?.color || '#0071E3';
+        const colorValue = item?.color || '#0A84FF';
         document.querySelector(`input[name="itemColor"][value="${colorValue}"]`).checked = true;
 
         // 渲染标签

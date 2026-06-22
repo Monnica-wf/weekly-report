@@ -2,41 +2,42 @@
 
 :root {
     /* 苹果系统色彩 - 克制使用 */
-    --blue: #0071E3;
-    --green: #34C759;
-    --orange: #FF9500;
-    --red: #FF3B30;
-    --purple: #AF52DE;
-    --indigo: #5856D6;
-    --pink: #FF2D55;
-    --teal: #5AC8FA;
+    --blue: #0A84FF;
+    --green: #30D158;
+    --orange: #FF9F0A;
+    --red: #FF453A;
+    --purple: #BF5AF2;
+    --indigo: #5E5CE6;
+    --pink: #FF375F;
+    --teal: #64D2FF;
 
-    /* 灰度系统 */
+    /* 暗色灰度系统 */
     --gray-1: #8E8E93;
-    --gray-2: #AEAEB2;
-    --gray-3: #C7C7CC;
-    --gray-4: #D1D1D6;
-    --gray-5: #E5E5EA;
-    --gray-6: #F2F2F7;
+    --gray-2: #636366;
+    --gray-3: #48484A;
+    --gray-4: #3A3A3C;
+    --gray-5: #2C2C2E;
+    --gray-6: #1C1C1E;
 
-    /* 背景色 */
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F5F5F7;
-    --bg-tertiary: #FAFAFA;
-    --bg-sidebar: #1D1D1F;
+    /* 背景色 - 深黑主题 */
+    --bg-primary: #000000;
+    --bg-secondary: #0A0A0A;
+    --bg-tertiary: #1C1C1E;
+    --bg-sidebar: #000000;
+    --bg-card: #1C1C1E;
 
-    /* 文字色 */
-    --text-primary: #1D1D1F;
-    --text-secondary: #6E6E73;
-    --text-tertiary: #86868B;
-    --text-quaternary: #AEAEB2;
+    /* 文字色 - 浅色 */
+    --text-primary: #FFFFFF;
+    --text-secondary: #EBEBF5;
+    --text-tertiary: #EBEBF599;
+    --text-quaternary: #EBEBF54D;
 
     /* 交互色 */
-    --border: rgba(0, 0, 0, 0.04);
-    --border-strong: rgba(0, 0, 0, 0.08);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+    --border: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
 
     /* 尺寸系统 */
     --radius-sm: 8px;
@@ -288,7 +289,7 @@ body {
 }
 
 .action-btn.primary:hover {
-    background: #0077ED;
+    background: #409CFF;
     transform: translateY(-1px);
 }
 
@@ -298,7 +299,7 @@ body {
 }
 
 .action-btn.secondary:hover {
-    background: #FF9F2F;
+    background: #FFB340;
     transform: translateY(-1px);
 }
 
@@ -331,10 +332,11 @@ body {
 }
 
 .content-section {
-    background: var(--bg-primary);
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
 }
 
 .content-section.full-width {
@@ -364,17 +366,17 @@ body {
 }
 
 .section-icon.blue {
-    background: rgba(0, 113, 227, 0.12);
+    background: rgba(10, 132, 255, 0.2);
     color: var(--blue);
 }
 
 .section-icon.orange {
-    background: rgba(255, 149, 0, 0.12);
+    background: rgba(255, 159, 10, 0.2);
     color: var(--orange);
 }
 
 .section-icon.purple {
-    background: rgba(175, 82, 222, 0.12);
+    background: rgba(191, 90, 242, 0.2);
     color: var(--purple);
 }
 
@@ -471,12 +473,12 @@ body {
     padding: 16px;
     margin-bottom: 12px;
     transition: all var(--transition-fast);
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
     position: relative;
 }
 
 .item-card:hover {
-    background: var(--gray-6);
+    background: var(--gray-5);
     border-color: var(--border-strong);
 }
 
@@ -571,11 +573,11 @@ body {
     font-weight: 500;
 }
 
-.item-category.work { background: rgba(0, 113, 227, 0.12); color: var(--blue); }
-.item-category.study { background: rgba(175, 82, 222, 0.12); color: var(--purple); }
-.item-category.life { background: rgba(52, 199, 89, 0.12); color: var(--green); }
-.item-category.project { background: rgba(255, 149, 0, 0.12); color: var(--orange); }
-.item-category.other { background: rgba(142, 142, 147, 0.12); color: var(--gray-1); }
+.item-category.work { background: rgba(10, 132, 255, 0.2); color: var(--blue); }
+.item-category.study { background: rgba(191, 90, 242, 0.2); color: var(--purple); }
+.item-category.life { background: rgba(48, 209, 88, 0.2); color: var(--green); }
+.item-category.project { background: rgba(255, 159, 10, 0.2); color: var(--orange); }
+.item-category.other { background: rgba(142, 142, 147, 0.2); color: var(--gray-1); }
 
 .item-tags {
     display: flex;
@@ -651,7 +653,7 @@ body {
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
-    background: rgba(0, 113, 227, 0.12);
+    background: rgba(10, 132, 255, 0.2);
     color: var(--blue);
     display: flex;
     align-items: center;
@@ -659,10 +661,10 @@ body {
     margin: 0 auto 12px;
 }
 
-.note-icon.pdf { background: rgba(255, 59, 48, 0.12); color: var(--red); }
-.note-icon.doc { background: rgba(0, 113, 227, 0.12); color: var(--blue); }
-.note-icon.image { background: rgba(52, 199, 89, 0.12); color: var(--green); }
-.note-icon.text { background: rgba(142, 142, 147, 0.12); color: var(--gray-1); }
+.note-icon.pdf { background: rgba(255, 69, 58, 0.2); color: var(--red); }
+.note-icon.doc { background: rgba(10, 132, 255, 0.2); color: var(--blue); }
+.note-icon.image { background: rgba(48, 209, 88, 0.2); color: var(--green); }
+.note-icon.text { background: rgba(142, 142, 147, 0.2); color: var(--gray-1); }
 
 .note-name {
     font-size: 14px;
@@ -939,8 +941,8 @@ body {
 .form-group select:focus {
     outline: none;
     border-color: var(--blue);
-    background: var(--bg-primary);
-    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+    background: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
 }
 
 .form-group textarea {
@@ -981,8 +983,8 @@ body {
 
 .tags-input:focus-within {
     border-color: var(--blue);
-    background: var(--bg-primary);
-    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+    background: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
 }
 
 .tags-container {
@@ -1125,17 +1127,17 @@ body {
 }
 
 .btn.primary:hover {
-    background: #0077ED;
+    background: #409CFF;
     transform: translateY(-1px);
 }
 
 .btn.secondary {
-    background: var(--gray-6);
+    background: var(--gray-4);
     color: var(--text-primary);
 }
 
 .btn.secondary:hover {
-    background: var(--gray-5);
+    background: var(--gray-3);
 }
 
 /* ===== Toast 提示 ===== */

@@ -105,7 +105,7 @@ class StorageManager {
             category: item.category || 'work',
             priority: item.priority || 'medium',
             tags: item.tags || [],
-            color: item.color || '#0071E3',
+            color: item.color || '#0A84FF',
             progress: item.progress !== undefined ? item.progress : 100,
             startDate: item.startDate || null,
             endDate: item.endDate || null,
