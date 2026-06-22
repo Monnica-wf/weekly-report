@@ -1,0 +1,682 @@
+/**
+ * 周报应用主逻辑 - Apple 风格
+ */
+
+class WeeklyReportApp {
+    constructor() {
+        this.currentDate = new Date();
+        this.currentYear = this.currentDate.getFullYear();
+        this.currentWeek = storage.getWeekNumber(this.currentDate);
+        this.editingItem = null;
+        this.editingType = null;
+        this.currentTags = [];
+        this.currentView = 'current';
+
+        this.init();
+    }
+
+    /**
+     * 初始化应用
+     */
+    init() {
+        this.bindEvents();
+        this.render();
+        this.setDefaultDates();
+    }
+
+    /**
+     * 绑定事件
+     */
+    bindEvents() {
+        // 导航切换
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const view = item.dataset.view;
+                this.switchView(view);
+            });
+        });
+
+        // 周导航
+        document.getElementById('prevWeek').addEventListener('click', () => this.changeWeek(-1));
+        document.getElementById('nextWeek').addEventListener('click', () => this.changeWeek(1));
+        document.getElementById('todayBtn').addEventListener('click', () => this.goToCurrentWeek());
+
+        // 添加按钮
+        document.getElementById('addTaskBtn').addEventListener('click', () => this.openModal('task'));
+        document.getElementById('addHarvestBtn').addEventListener('click', () => this.openModal('harvest'));
+
+        // 模态框
+        document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
+        document.getElementById('cancelBtn').addEventListener('click', () => this.closeModal());
+        document.getElementById('saveBtn').addEventListener('click', () => this.saveItem());
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modalOverlay') this.closeModal();
+        });
+
+        // 进度滑块
+        document.getElementById('itemProgress').addEventListener('input', (e) => {
+            document.getElementById('progressValue').textContent = e.target.value + '%';
+        });
+
+        // 标签输入
+        document.getElementById('tagInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.addTag(e.target.value.trim());
+                e.target.value = '';
+            }
+        });
+
+        // 笔记上传
+        document.getElementById('uploadNoteBtn').addEventListener('click', () => {
+            document.getElementById('noteInput').click();
+        });
+        document.getElementById('noteInput').addEventListener('change', (e) => this.handleNoteUpload(e));
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('modalOverlay').classList.contains('active')) {
+                this.closeModal();
+            }
+        });
+    }
+
+    /**
+     * 设置默认日期
+     */
+    setDefaultDates() {
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        document.getElementById('itemEndDate').value = dateStr;
+    }
+
+    /**
+     * 切换视图
+     */
+    switchView(view) {
+        this.currentView = view;
+
+        // 更新导航状态
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.view === view);
+        });
+
+        // 切换视图显示
+        document.querySelectorAll('.view').forEach(v => {
+            v.classList.remove('active');
+        });
+        document.getElementById(view + 'View').classList.add('active');
+
+        // 刷新对应视图
+        if (view === 'stats') {
+            this.renderStats();
+        }
+    }
+
+    /**
+     * 切换周
+     */
+    changeWeek(delta) {
+        this.currentWeek += delta;
+
+        if (this.currentWeek > 52) {
+            this.currentWeek = 1;
+            this.currentYear++;
+        } else if (this.currentWeek < 1) {
+            this.currentWeek = 52;
+            this.currentYear--;
+        }
+
+        this.render();
+    }
+
+    /**
+     * 回到当前周
+     */
+    goToCurrentWeek() {
+        this.currentDate = new Date();
+        this.currentYear = this.currentDate.getFullYear();
+        this.currentWeek = storage.getWeekNumber(this.currentDate);
+        this.render();
+    }
+
+    /**
+     * 打开模态框
+     */
+    openModal(type, item = null) {
+        this.editingType = type;
+        this.editingItem = item;
+        this.currentTags = item ? [...item.tags] : [];
+
+        const modal = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+
+        title.textContent = item
+            ? (type === 'task' ? '编辑完成事项' : '编辑收获心得')
+            : (type === 'task' ? '添加完成事项' : '添加收获心得');
+
+        // 填充表单
+        document.getElementById('itemTitle').value = item?.title || '';
+        document.getElementById('itemContent').value = item?.content || '';
+        document.getElementById('itemCategory').value = item?.category || 'work';
+        document.getElementById('itemPriority').value = item?.priority || 'medium';
+        document.getElementById('itemProgress').value = item?.progress !== undefined ? item.progress : 100;
+        document.getElementById('progressValue').textContent = (item?.progress !== undefined ? item.progress : 100) + '%';
+        document.getElementById('itemStartDate').value = item?.startDate || '';
+        document.getElementById('itemEndDate').value = item?.endDate || '';
+
+        // 设置颜色
+        const colorValue = item?.color || '#0071E3';
+        document.querySelector(`input[name="itemColor"][value="${colorValue}"]`).checked = true;
+
+        // 渲染标签
+        this.renderTags();
+
+        modal.classList.add('active');
+        document.getElementById('itemTitle').focus();
+    }
+
+    /**
+     * 关闭模态框
+     */
+    closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        this.editingItem = null;
+        this.editingType = null;
+        this.currentTags = [];
+
+        // 重置表单
+        document.getElementById('itemForm').reset();
+        document.getElementById('progressValue').textContent = '100%';
+    }
+
+    /**
+     * 添加标签
+     */
+    addTag(tagText) {
+        if (tagText && !this.currentTags.includes(tagText) && this.currentTags.length < 5) {
+            this.currentTags.push(tagText);
+            this.renderTags();
+        }
+    }
+
+    /**
+     * 移除标签
+     */
+    removeTag(index) {
+        this.currentTags.splice(index, 1);
+        this.renderTags();
+    }
+
+    /**
+     * 渲染标签
+     */
+    renderTags() {
+        const container = document.getElementById('tagsContainer');
+        container.innerHTML = this.currentTags.map((tag, index) => `
+            <span class="tag-item">
+                ${this.escapeHtml(tag)}
+                <button class="tag-remove" onclick="app.removeTag(${index})">×</button>
+            </span>
+        `).join('');
+    }
+
+    /**
+     * 保存事项
+     */
+    saveItem() {
+        const title = document.getElementById('itemTitle').value.trim();
+        const content = document.getElementById('itemContent').value.trim();
+        const category = document.getElementById('itemCategory').value;
+        const priority = document.getElementById('itemPriority').value;
+        const progress = parseInt(document.getElementById('itemProgress').value);
+        const startDate = document.getElementById('itemStartDate').value;
+        const endDate = document.getElementById('itemEndDate').value;
+        const color = document.querySelector('input[name="itemColor"]:checked').value;
+
+        if (!title) {
+            this.showToast('请输入标题', 'error');
+            document.getElementById('itemTitle').focus();
+            return;
+        }
+
+        const itemData = {
+            title,
+            content,
+            category,
+            priority,
+            tags: [...this.currentTags],
+            color,
+            progress,
+            startDate: startDate || null,
+            endDate: endDate || null
+        };
+
+        if (this.editingItem) {
+            storage.updateItem(this.currentYear, this.currentWeek, this.editingType, this.editingItem.id, itemData);
+            this.showToast('更新成功');
+        } else {
+            storage.addItem(this.currentYear, this.currentWeek, this.editingType, itemData);
+            this.showToast('添加成功');
+        }
+
+        this.closeModal();
+        this.render();
+    }
+
+    /**
+     * 删除事项
+     */
+    deleteItem(type, itemId) {
+        if (confirm('确定要删除这条记录吗？')) {
+            storage.deleteItem(this.currentYear, this.currentWeek, type, itemId);
+            this.showToast('已删除');
+            this.render();
+        }
+    }
+
+    /**
+     * 编辑事项
+     */
+    editItem(type, item) {
+        this.openModal(type, item);
+    }
+
+    /**
+     * 处理笔记上传
+     */
+    handleNoteUpload(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const noteData = {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    content: e.target.result
+                };
+
+                storage.saveNote(this.currentYear, this.currentWeek, noteData);
+                this.showToast('上传成功');
+                this.render();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        event.target.value = '';
+    }
+
+    /**
+     * 删除笔记
+     */
+    deleteNote(noteId) {
+        if (confirm('确定要删除这个笔记吗？')) {
+            storage.deleteNote(this.currentYear, this.currentWeek, noteId);
+            this.showToast('已删除');
+            this.render();
+        }
+    }
+
+    /**
+     * 下载笔记
+     */
+    downloadNote(note) {
+        const link = document.createElement('a');
+        link.href = note.content;
+        link.download = note.name;
+        link.click();
+    }
+
+    /**
+     * 显示提示
+     */
+    showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        toastMessage.textContent = message;
+        toast.className = 'toast ' + type;
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+
+    /**
+     * 渲染页面
+     */
+    render() {
+        this.renderWeekDisplay();
+        this.renderTasks();
+        this.renderHarvests();
+        this.renderNotes();
+        this.renderHistory();
+        this.renderStats();
+    }
+
+    /**
+     * 渲染周显示
+     */
+    renderWeekDisplay() {
+        const dateRange = storage.getWeekDateRange(this.currentWeek, this.currentYear);
+
+        document.getElementById('currentWeekTitle').textContent = `${this.currentYear}年第${this.currentWeek}周`;
+        document.getElementById('currentWeekDates').textContent = `${dateRange.start} - ${dateRange.end}`;
+        document.getElementById('sidebarWeek').textContent = `第${this.currentWeek}周`;
+    }
+
+    /**
+     * 渲染任务列表
+     */
+    renderTasks() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const container = document.getElementById('tasksList');
+        const countEl = document.getElementById('tasksCount');
+
+        countEl.textContent = weekData.tasks.length;
+
+        if (weekData.tasks.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <rect x="8" y="8" width="32" height="32" rx="8" stroke="currentColor" stroke-width="2"/>
+                            <path d="M18 24l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p>本周还没有完成事项</p>
+                    <button class="link-btn" onclick="app.openModal('task')">添加第一个事项</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = weekData.tasks.map(task => this.renderItemCard(task, 'task')).join('');
+    }
+
+    /**
+     * 渲染收获列表
+     */
+    renderHarvests() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const container = document.getElementById('harvestsList');
+        const countEl = document.getElementById('harvestsCount');
+
+        countEl.textContent = weekData.harvests.length;
+
+        if (weekData.harvests.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <path d="M24 8l14 8v16l-14 8-14-8V16l14-8z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M24 24v16M24 24L10 16M24 24l14-8" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <p>本周还没有记录收获</p>
+                    <button class="link-btn" onclick="app.openModal('harvest')">记录第一个收获</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = weekData.harvests.map(harvest => this.renderItemCard(harvest, 'harvest')).join('');
+    }
+
+    /**
+     * 渲染事项卡片
+     */
+    renderItemCard(item, type) {
+        const categoryLabels = {
+            work: '工作',
+            study: '学习',
+            life: '生活',
+            project: '项目',
+            other: '其他'
+        };
+
+        const tagsHtml = item.tags && item.tags.length > 0
+            ? `<div class="item-tags">${item.tags.map(tag => `<span class="item-tag">${this.escapeHtml(tag)}</span>`).join('')}</div>`
+            : '';
+
+        const progressHtml = item.progress !== undefined && item.progress < 100
+            ? `<div class="item-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress}%"></div></div>
+                <span class="progress-text">${item.progress}%</span>
+               </div>`
+            : '';
+
+        const dateHtml = item.endDate
+            ? `<span class="item-date"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h12M4 1v3M10 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${this.formatDate(item.endDate)}</span>`
+            : '';
+
+        return `
+            <div class="item-card" data-id="${item.id}">
+                <div class="item-header">
+                    <div class="item-title-wrapper">
+                        <div class="item-color-dot" style="background: ${item.color}"></div>
+                        <span class="item-title">${this.escapeHtml(item.title)}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="item-action-btn" onclick="app.editItem('${type}', ${JSON.stringify(item).replace(/'/g, "\\'")})" title="编辑">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M11.5 2.5l2 2M2 12v2h2l7.5-7.5-2-2L2 12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="item-action-btn delete" onclick="app.deleteItem('${type}', ${item.id})" title="删除">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                ${item.content ? `<div class="item-content">${this.escapeHtml(item.content)}</div>` : ''}
+                <div class="item-meta">
+                    <span class="item-category ${item.category}">${categoryLabels[item.category] || '其他'}</span>
+                    ${tagsHtml}
+                    ${progressHtml}
+                    ${dateHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 渲染笔记列表
+     */
+    renderNotes() {
+        const notes = storage.getWeekNotes(this.currentYear, this.currentWeek);
+        const container = document.getElementById('notesList');
+
+        if (notes.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <path d="M12 8h24a4 4 0 014 4v24a4 4 0 01-4 4H12a4 4 0 01-4-4V12a4 4 0 014-4z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 20h16M16 28h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <p>暂无笔记文件</p>
+                    <button class="link-btn" onclick="document.getElementById('noteInput').click()">上传第一个笔记</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = notes.map(note => {
+            const iconClass = this.getFileIconClass(note.type);
+            return `
+                <div class="note-card" onclick='app.downloadNote(${JSON.stringify(note).replace(/'/g, "\\'")})'>
+                    <div class="note-icon ${iconClass}">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M13 2v7h7" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="note-name">${this.escapeHtml(note.name)}</div>
+                    <div class="note-size">${this.formatFileSize(note.size)}</div>
+                    <div class="note-actions" onclick="event.stopPropagation()">
+                        <button class="item-action-btn" onclick="app.downloadNote(${JSON.stringify(note).replace(/'/g, "\\'")})" title="下载">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 11V3M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="item-action-btn delete" onclick="app.deleteNote(${note.id})" title="删除">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * 获取文件图标类
+     */
+    getFileIconClass(type) {
+        if (type.includes('pdf')) return 'pdf';
+        if (type.includes('word') || type.includes('document')) return 'doc';
+        if (type.includes('image')) return 'image';
+        return 'text';
+    }
+
+    /**
+     * 渲染历史周报
+     */
+    renderHistory() {
+        const history = storage.getHistoryWeeks();
+        const container = document.getElementById('historyTimeline');
+
+        if (history.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state large">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                            <circle cx="32" cy="32" r="24" stroke="currentColor" stroke-width="2"/>
+                            <path d="M32 18v18l10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3>还没有历史周报</h3>
+                    <p>开始记录你的第一周周报吧</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = history.map(week => `
+            <div class="timeline-item" onclick="app.jumpToWeek(${week.year}, ${week.weekNum})">
+                <div class="timeline-info">
+                    <div class="timeline-week">${week.year}年第${week.weekNum}周</div>
+                    <div class="timeline-dates">${week.dateRange.start} - ${week.dateRange.end}</div>
+                </div>
+                <div class="timeline-stats">
+                    <div class="timeline-stat">
+                        <div class="timeline-stat-value">${week.tasksCount}</div>
+                        <div class="timeline-stat-label">事项</div>
+                    </div>
+                    <div class="timeline-stat">
+                        <div class="timeline-stat-value">${week.harvestsCount}</div>
+                        <div class="timeline-stat-label">收获</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * 跳转到指定周
+     */
+    jumpToWeek(year, week) {
+        this.currentYear = year;
+        this.currentWeek = week;
+        this.switchView('current');
+        this.render();
+    }
+
+    /**
+     * 渲染统计数据
+     */
+    renderStats() {
+        const stats = storage.getOverallStats();
+        const totalNotes = storage.getTotalNotes();
+
+        document.getElementById('statWeeks').textContent = stats.totalWeeks;
+        document.getElementById('statTasks').textContent = stats.totalTasks;
+        document.getElementById('statHarvests').textContent = stats.totalHarvests;
+        document.getElementById('statNotes').textContent = totalNotes;
+
+        // 渲染趋势图
+        this.renderTrendChart();
+    }
+
+    /**
+     * 渲染趋势图
+     */
+    renderTrendChart() {
+        const trendData = storage.getTrendData();
+        const container = document.getElementById('trendChart');
+
+        if (trendData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>暂无数据</p></div>';
+            return;
+        }
+
+        const maxValue = Math.max(...trendData.map(d => d.tasksCount + d.harvestsCount), 1);
+
+        container.innerHTML = `
+            <div style="display: flex; gap: 8px; height: 100%; align-items: flex-end;">
+                ${trendData.map(d => {
+                    const height = ((d.tasksCount + d.harvestsCount) / maxValue) * 160;
+                    return `
+                        <div style="flex: 1; text-align: center;">
+                            <div class="chart-bar ${d.tasksCount + d.harvestsCount > 0 ? 'has-data' : ''}"
+                                 style="height: ${Math.max(height, 20)}px;"
+                                 title="事项: ${d.tasksCount}, 收获: ${d.harvestsCount}">
+                            </div>
+                            <div class="chart-label">W${d.weekNum}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * 格式化日期
+     */
+    formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return `${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+
+    /**
+     * 格式化文件大小
+     */
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    /**
+     * HTML转义
+     */
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// 初始化应用
+const app = new WeeklyReportApp();
