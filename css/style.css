@@ -619,33 +619,49 @@ body {
 .item-progress {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    width: 100%;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
 }
 
 .progress-bar {
-    width: 60px;
-    height: 4px;
-    border-radius: 2px;
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
     background: var(--gray-5);
     overflow: hidden;
+    position: relative;
 }
 
 .progress-fill {
     height: 100%;
-    border-radius: 2px;
-    background: var(--green);
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    transition: width 0.3s ease;
 }
 
 .progress-text {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-tertiary);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 45px;
+    text-align: right;
 }
 
 .item-date {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.item-ddl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--orange);
+    font-weight: 500;
 }
 
 /* ===== 笔记网格 ===== */

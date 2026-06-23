@@ -57,6 +57,7 @@ class WeeklyReportApp {
         // 进度滑块
         document.getElementById('itemProgress').addEventListener('input', (e) => {
             document.getElementById('progressValue').textContent = e.target.value + '%';
+            this.toggleDDLField(parseInt(e.target.value));
         });
 
         // 标签输入
@@ -161,18 +162,23 @@ class WeeklyReportApp {
         const title = document.getElementById('modalTitle');
 
         title.textContent = item
-            ? (type === 'task' ? '编辑完成事项' : '编辑收获心得')
-            : (type === 'task' ? '添加完成事项' : '添加收获心得');
+            ? (type === 'task' ? '编辑完成事项' : '编辑下周计划')
+            : (type === 'task' ? '添加完成事项' : '添加下周计划');
 
         // 填充表单
         document.getElementById('itemTitle').value = item?.title || '';
         document.getElementById('itemContent').value = item?.content || '';
-        document.getElementById('itemCategory').value = item?.category || 'work';
-        document.getElementById('itemPriority').value = item?.priority || 'medium';
-        document.getElementById('itemProgress').value = item?.progress !== undefined ? item.progress : 100;
-        document.getElementById('progressValue').textContent = (item?.progress !== undefined ? item.progress : 100) + '%';
+        document.getElementById('itemCategory').value = item?.category || 'ai';
+        document.getElementById('itemPriority').value = item?.priority || 'p1';
+        const progressValue = item?.progress !== undefined ? item.progress : 100;
+        document.getElementById('itemProgress').value = progressValue;
+        document.getElementById('progressValue').textContent = progressValue + '%';
         document.getElementById('itemStartDate').value = item?.startDate || '';
         document.getElementById('itemEndDate').value = item?.endDate || '';
+        document.getElementById('itemDDL').value = item?.ddl || '';
+
+        // 显示/隐藏 DDL 字段
+        this.toggleDDLField(progressValue);
 
         // 设置颜色
         const colorValue = item?.color || '#0A84FF';
@@ -183,6 +189,22 @@ class WeeklyReportApp {
 
         modal.classList.add('active');
         document.getElementById('itemTitle').focus();
+    }
+
+    /**
+     * 切换 DDL 字段显示
+     */
+    toggleDDLField(progress) {
+        const ddlGroup = document.getElementById('ddlGroup');
+        const ddlInput = document.getElementById('itemDDL');
+
+        if (progress < 100) {
+            ddlGroup.style.display = 'block';
+            ddlInput.required = true;
+        } else {
+            ddlGroup.style.display = 'none';
+            ddlInput.required = false;
+        }
     }
 
     /**
@@ -197,6 +219,7 @@ class WeeklyReportApp {
         // 重置表单
         document.getElementById('itemForm').reset();
         document.getElementById('progressValue').textContent = '100%';
+        document.getElementById('ddlGroup').style.display = 'none';
     }
 
     /**
@@ -241,11 +264,19 @@ class WeeklyReportApp {
         const progress = parseInt(document.getElementById('itemProgress').value);
         const startDate = document.getElementById('itemStartDate').value;
         const endDate = document.getElementById('itemEndDate').value;
+        const ddl = document.getElementById('itemDDL').value;
         const color = document.querySelector('input[name="itemColor"]:checked').value;
 
         if (!title) {
             this.showToast('请输入标题', 'error');
             document.getElementById('itemTitle').focus();
+            return;
+        }
+
+        // 如果进度未完成，必须设置 DDL
+        if (progress < 100 && !ddl) {
+            this.showToast('未完成事项必须设置截止日期', 'error');
+            document.getElementById('itemDDL').focus();
             return;
         }
 
@@ -258,7 +289,8 @@ class WeeklyReportApp {
             color,
             progress,
             startDate: startDate || null,
-            endDate: endDate || null
+            endDate: endDate || null,
+            ddl: ddl || null
         };
 
         if (this.editingItem) {
@@ -537,7 +569,7 @@ class WeeklyReportApp {
             ? `<div class="item-tags">${item.tags.map(tag => `<span class="item-tag">${this.escapeHtml(tag)}</span>`).join('')}</div>`
             : '';
 
-        // 始终显示进度条
+        // 始终显示进度条（独立成行）
         const progressValue = item.progress !== undefined ? item.progress : 100;
         const progressHtml = `
             <div class="item-progress">
@@ -548,6 +580,11 @@ class WeeklyReportApp {
 
         const dateHtml = item.endDate
             ? `<span class="item-date"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h12M4 1v3M10 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${this.formatDate(item.endDate)}</span>`
+            : '';
+
+        // DDL 显示
+        const ddlHtml = item.ddl
+            ? `<span class="item-ddl"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>DDL: ${this.formatDate(item.ddl)}</span>`
             : '';
 
         return `
@@ -575,9 +612,10 @@ class WeeklyReportApp {
                     <span class="item-category ${item.category}">${categoryLabels[item.category] || 'AI'}</span>
                     <span class="item-priority ${item.priority}">${priorityLabels[item.priority] || 'P1'}</span>
                     ${tagsHtml}
-                    ${progressHtml}
                     ${dateHtml}
+                    ${ddlHtml}
                 </div>
+                ${progressHtml}
             </div>
         `;
     }

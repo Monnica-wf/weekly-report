@@ -110,6 +110,7 @@ class StorageManager {
             progress: item.progress !== undefined ? item.progress : 100,
             startDate: item.startDate || null,
             endDate: item.endDate || null,
+            ddl: item.ddl || null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
