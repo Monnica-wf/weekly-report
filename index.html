@@ -93,10 +93,10 @@
                     </button>
                     <button class="action-btn secondary" id="addHarvestBtn">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M9 15l-5.878-3.124C2.424 11.29 2 10.594 2 9.84V4.16c0-.754.424-1.45 1.122-1.784L9 1l5.878 2.376C15.576 3.71 16 4.406 16 5.16v5.68c0 .754-.424 1.45-1.122 1.784L9 15z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M9 8v3M9 8L6.5 5.5M9 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M2 7h14M5 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
-                        <span>记录收获</span>
+                        <span>下周计划</span>
                     </button>
                 </div>
             </header>
@@ -134,16 +134,17 @@
                             </div>
                         </div>
 
-                        <!-- 收获心得 -->
+                        <!-- 下周计划 -->
                         <div class="content-section">
                             <div class="section-header">
                                 <div class="section-title">
                                     <div class="section-icon orange">
                                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                            <path d="M9 15l-5.878-3.124C2.424 11.29 2 10.594 2 9.84V4.16c0-.754.424-1.45 1.122-1.784L9 0l5.878 2.376C15.576 2.71 16 3.406 16 4.16v5.68c0 .754-.424 1.45-1.122 1.784L9 15z" stroke="currentColor" stroke-width="1.5"/>
+                                            <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M2 7h14M5 1v4M13 1v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                                         </svg>
                                     </div>
-                                    <h2>收获心得</h2>
+                                    <h2>下周计划</h2>
                                 </div>
                                 <span class="badge" id="harvestsCount">0</span>
                             </div>
@@ -151,12 +152,12 @@
                                 <div class="empty-state">
                                     <div class="empty-icon">
                                         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                            <path d="M24 8l14 8v16l-14 8-14-8V16l14-8z" stroke="currentColor" stroke-width="2"/>
-                                            <path d="M24 24v16M24 24L10 16M24 24l14-8" stroke="currentColor" stroke-width="2"/>
+                                            <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" stroke-width="2"/>
+                                            <path d="M6 18h36M14 6v8M34 6v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                         </svg>
                                     </div>
-                                    <p>本周还没有记录收获</p>
-                                    <button class="link-btn" onclick="app.openModal('harvest')">记录第一个收获</button>
+                                    <p>暂无下周计划</p>
+                                    <button class="link-btn" onclick="app.openModal('harvest')">添加下周计划</button>
                                 </div>
                             </div>
                         </div>
@@ -192,6 +193,25 @@
                                     </div>
                                     <p>暂无笔记文件</p>
                                     <button class="link-btn" onclick="document.getElementById('noteInput').click()">上传第一个笔记</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 心得体会 -->
+                        <div class="content-section full-width thoughts-section">
+                            <div class="section-header">
+                                <div class="section-title">
+                                    <div class="section-icon pink">
+                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                            <path d="M9 15l-5.878-3.124C2.424 11.29 2 10.594 2 9.84V4.16c0-.754.424-1.45 1.122-1.784L9 1l5.878 2.376C15.576 2.71 16 3.406 16 4.16v5.68c0 .754-.424 1.45-1.122 1.784L9 15z" stroke="currentColor" stroke-width="1.5"/>
+                                        </svg>
+                                    </div>
+                                    <h2>心得体会</h2>
+                                </div>
+                            </div>
+                            <div class="section-content thoughts-content" id="thoughtsList">
+                                <div class="empty-state compact">
+                                    <p>暂无心得体会</p>
                                 </div>
                             </div>
                         </div>
@@ -318,20 +338,18 @@
                         <div class="form-group half">
                             <label for="itemCategory">分类</label>
                             <select id="itemCategory">
-                                <option value="work">工作</option>
-                                <option value="study">学习</option>
-                                <option value="life">生活</option>
-                                <option value="project">项目</option>
-                                <option value="other">其他</option>
+                                <option value="ai">AI</option>
+                                <option value="c_product">C端产品</option>
                             </select>
                         </div>
 
                         <div class="form-group half">
                             <label for="itemPriority">优先级</label>
                             <select id="itemPriority">
-                                <option value="high">高优先</option>
-                                <option value="medium" selected>中等</option>
-                                <option value="low">一般</option>
+                                <option value="p0">P0</option>
+                                <option value="p1" selected>P1</option>
+                                <option value="p2">P2</option>
+                                <option value="p3">P3</option>
                             </select>
                         </div>
                     </div>

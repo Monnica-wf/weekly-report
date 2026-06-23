@@ -422,6 +422,7 @@ class WeeklyReportApp {
         this.renderTasks();
         this.renderHarvests();
         this.renderNotes();
+        this.renderThoughts();
         this.renderComments();
         this.renderHistory();
         this.renderStats();
@@ -446,9 +447,16 @@ class WeeklyReportApp {
         const container = document.getElementById('tasksList');
         const countEl = document.getElementById('tasksCount');
 
-        countEl.textContent = weekData.tasks.length;
+        // 按完成度从高到低排序
+        const sortedTasks = [...weekData.tasks].sort((a, b) => {
+            const progressA = a.progress !== undefined ? a.progress : 100;
+            const progressB = b.progress !== undefined ? b.progress : 100;
+            return progressB - progressA; // 从高到低
+        });
 
-        if (weekData.tasks.length === 0) {
+        countEl.textContent = sortedTasks.length;
+
+        if (sortedTasks.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">
@@ -464,36 +472,49 @@ class WeeklyReportApp {
             return;
         }
 
-        container.innerHTML = weekData.tasks.map(task => this.renderItemCard(task, 'task')).join('');
+        container.innerHTML = sortedTasks.map(task => this.renderItemCard(task, 'task')).join('');
     }
 
     /**
-     * 渲染收获列表
+     * 渲染收获列表（下周计划）
      */
     renderHarvests() {
         const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
         const container = document.getElementById('harvestsList');
         const countEl = document.getElementById('harvestsCount');
 
-        countEl.textContent = weekData.harvests.length;
+        // 获取本周未完成的事项（进度<100%）
+        const incompleteTasks = weekData.tasks.filter(task => {
+            const progress = task.progress !== undefined ? task.progress : 100;
+            return progress < 100;
+        });
 
-        if (weekData.harvests.length === 0) {
+        // 合并手动添加的下周计划和未完成事项
+        const allPlans = [...weekData.harvests, ...incompleteTasks.map(task => ({
+            ...task,
+            isFromIncomplete: true,
+            title: `[未完成] ${task.title}`
+        }))];
+
+        countEl.textContent = allPlans.length;
+
+        if (allPlans.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">
                         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <path d="M24 8l14 8v16l-14 8-14-8V16l14-8z" stroke="currentColor" stroke-width="2"/>
-                            <path d="M24 24v16M24 24L10 16M24 24l14-8" stroke="currentColor" stroke-width="2"/>
+                            <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" stroke-width="2"/>
+                            <path d="M6 18h36M14 6v8M34 6v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <p>本周还没有记录收获</p>
-                    <button class="link-btn" onclick="app.openModal('harvest')">记录第一个收获</button>
+                    <p>暂无下周计划</p>
+                    <button class="link-btn" onclick="app.openModal('harvest')">添加下周计划</button>
                 </div>
             `;
             return;
         }
 
-        container.innerHTML = weekData.harvests.map(harvest => this.renderItemCard(harvest, 'harvest')).join('');
+        container.innerHTML = allPlans.map(plan => this.renderItemCard(plan, 'harvest')).join('');
     }
 
     /**
@@ -501,23 +522,29 @@ class WeeklyReportApp {
      */
     renderItemCard(item, type) {
         const categoryLabels = {
-            work: '工作',
-            study: '学习',
-            life: '生活',
-            project: '项目',
-            other: '其他'
+            ai: 'AI',
+            c_product: 'C端产品'
+        };
+
+        const priorityLabels = {
+            p0: 'P0',
+            p1: 'P1',
+            p2: 'P2',
+            p3: 'P3'
         };
 
         const tagsHtml = item.tags && item.tags.length > 0
             ? `<div class="item-tags">${item.tags.map(tag => `<span class="item-tag">${this.escapeHtml(tag)}</span>`).join('')}</div>`
             : '';
 
-        const progressHtml = item.progress !== undefined && item.progress < 100
-            ? `<div class="item-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width: ${item.progress}%"></div></div>
-                <span class="progress-text">${item.progress}%</span>
-               </div>`
-            : '';
+        // 始终显示进度条
+        const progressValue = item.progress !== undefined ? item.progress : 100;
+        const progressHtml = `
+            <div class="item-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width: ${progressValue}%"></div></div>
+                <span class="progress-text">${progressValue}%</span>
+            </div>
+        `;
 
         const dateHtml = item.endDate
             ? `<span class="item-date"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h12M4 1v3M10 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${this.formatDate(item.endDate)}</span>`
@@ -545,7 +572,8 @@ class WeeklyReportApp {
                 </div>
                 ${item.content ? `<div class="item-content">${this.escapeHtml(item.content)}</div>` : ''}
                 <div class="item-meta">
-                    <span class="item-category ${item.category}">${categoryLabels[item.category] || '其他'}</span>
+                    <span class="item-category ${item.category}">${categoryLabels[item.category] || 'AI'}</span>
+                    <span class="item-priority ${item.priority}">${priorityLabels[item.priority] || 'P1'}</span>
                     ${tagsHtml}
                     ${progressHtml}
                     ${dateHtml}
@@ -614,6 +642,57 @@ class WeeklyReportApp {
         if (type.includes('word') || type.includes('document')) return 'doc';
         if (type.includes('image')) return 'image';
         return 'text';
+    }
+
+    /**
+     * 渲染心得体会
+     */
+    renderThoughts() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const container = document.getElementById('thoughtsList');
+
+        // 从任务中提取包含"心得"、"体会"、"感悟"等关键词的内容
+        const thoughts = [];
+        weekData.tasks.forEach(task => {
+            if (task.content && (
+                task.content.includes('心得') ||
+                task.content.includes('体会') ||
+                task.content.includes('感悟') ||
+                task.content.includes('总结') ||
+                task.content.includes('经验')
+            )) {
+                thoughts.push({
+                    title: task.title,
+                    content: task.content
+                });
+            }
+        });
+
+        // 也从收获中提取
+        weekData.harvests.forEach(harvest => {
+            if (harvest.content) {
+                thoughts.push({
+                    title: harvest.title,
+                    content: harvest.content
+                });
+            }
+        });
+
+        if (thoughts.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state compact">
+                    <p>暂无心得体会</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = thoughts.map(thought => `
+            <div class="thought-item">
+                <strong>${this.escapeHtml(thought.title)}</strong>
+                ${thought.content ? `<br>${this.escapeHtml(thought.content)}` : ''}
+            </div>
+        `).join('');
     }
 
     /**

@@ -380,6 +380,11 @@ body {
     color: var(--purple);
 }
 
+.section-icon.pink {
+    background: rgba(255, 55, 95, 0.2);
+    color: var(--pink);
+}
+
 .section-title h2 {
     font-size: 18px;
     font-weight: 600;
@@ -579,6 +584,24 @@ body {
 .item-category.project { background: rgba(255, 159, 10, 0.2); color: var(--orange); }
 .item-category.other { background: rgba(142, 142, 147, 0.2); color: var(--gray-1); }
 
+.item-category.ai { background: rgba(10, 132, 255, 0.2); color: var(--blue); }
+.item-category.c_product { background: rgba(255, 159, 10, 0.2); color: var(--orange); }
+
+.item-priority {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.item-priority.p0 { background: rgba(255, 69, 58, 0.2); color: var(--red); }
+.item-priority.p1 { background: rgba(255, 159, 10, 0.2); color: var(--orange); }
+.item-priority.p2 { background: rgba(10, 132, 255, 0.2); color: var(--blue); }
+.item-priority.p3 { background: rgba(142, 142, 147, 0.2); color: var(--gray-1); }
+
 .item-tags {
     display: flex;
     gap: 6px;
@@ -697,6 +720,42 @@ body {
 .section-icon.teal {
     background: rgba(100, 210, 255, 0.2);
     color: var(--teal);
+}
+
+/* ===== 心得体会 ===== */
+
+.thoughts-section {
+    margin-top: 24px;
+}
+
+.thoughts-content {
+    min-height: auto;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.empty-state.compact {
+    padding: 24px;
+}
+
+.empty-state.compact p {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.thought-item {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.thought-item:last-child {
+    margin-bottom: 0;
 }
 
 .comment-input-area {
