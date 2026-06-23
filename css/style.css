@@ -2329,6 +2329,9 @@ body::after {
 
 .hero-copy h2 {
     font-size: clamp(28px, 4.7vw, 57px);
+    line-height: 1.12;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.04em;
 }
 
 .note-actions-header {
