@@ -19,6 +19,7 @@ class WeeklyReportApp {
      * 初始化应用
      */
     init() {
+        this.importShareFromUrl();
         this.bindEvents();
         this.render();
         this.setDefaultDates();
@@ -43,6 +44,7 @@ class WeeklyReportApp {
         document.getElementById('todayBtn').addEventListener('click', () => this.goToCurrentWeek());
 
         // 添加按钮
+        document.getElementById('shareReportBtn').addEventListener('click', () => this.shareReport());
         document.getElementById('addTaskBtn').addEventListener('click', () => this.openModal('task'));
         document.getElementById('addHarvestBtn').addEventListener('click', () => this.openModal('harvest'));
 
@@ -73,6 +75,7 @@ class WeeklyReportApp {
         document.getElementById('uploadNoteBtn').addEventListener('click', () => {
             document.getElementById('noteInput').click();
         });
+        document.getElementById('addNoteLinkBtn').addEventListener('click', () => this.addNoteLink());
         document.getElementById('noteInput').addEventListener('change', (e) => this.handleNoteUpload(e));
 
         // 评论提交
@@ -98,6 +101,45 @@ class WeeklyReportApp {
         const today = new Date();
         const dateStr = today.toISOString().split('T')[0];
         document.getElementById('itemEndDate').value = dateStr;
+    }
+
+    /**
+     * 从分享链接导入数据
+     */
+    importShareFromUrl() {
+        const match = window.location.hash.slice(1).match(/(?:^|&)share=([^&]+)/);
+        if (!match) return;
+
+        try {
+            const json = this.decodeSharePayload(match[1]);
+            storage.importShareData(JSON.parse(json));
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+            this.showToast('已载入分享数据');
+        } catch (e) {
+            console.error('导入分享数据失败:', e);
+            this.showToast('分享链接无效', 'error');
+        }
+    }
+
+    /**
+     * 生成并复制分享链接
+     */
+    async shareReport() {
+        try {
+            const payload = this.encodeSharePayload(JSON.stringify(storage.exportShareData()));
+            const shareUrl = `${window.location.href.split('#')[0]}#share=${payload}`;
+
+            if (shareUrl.length > 18000) {
+                this.showToast('内容太多，链接会过长，请减少文件笔记后再分享', 'error');
+                return;
+            }
+
+            await this.copyText(shareUrl);
+            this.showToast('分享链接已复制');
+        } catch (e) {
+            console.error('生成分享链接失败:', e);
+            this.showToast('生成分享链接失败', 'error');
+        }
     }
 
     /**
@@ -162,8 +204,8 @@ class WeeklyReportApp {
         const title = document.getElementById('modalTitle');
 
         title.textContent = item
-            ? (type === 'task' ? '编辑完成事项' : '编辑下周计划')
-            : (type === 'task' ? '添加完成事项' : '添加下周计划');
+            ? (type === 'task' ? '编辑本周工作' : '编辑下周计划')
+            : (type === 'task' ? '添加本周工作' : '添加下周计划');
 
         // 填充表单
         document.getElementById('itemTitle').value = item?.title || '';
@@ -275,7 +317,7 @@ class WeeklyReportApp {
 
         // 如果进度未完成，必须设置 DDL
         if (progress < 100 && !ddl) {
-            this.showToast('未完成事项必须设置截止日期', 'error');
+            this.showToast('未完成工作必须设置截止日期', 'error');
             document.getElementById('itemDDL').focus();
             return;
         }
@@ -351,6 +393,31 @@ class WeeklyReportApp {
     }
 
     /**
+     * 添加链接笔记
+     */
+    addNoteLink() {
+        const rawUrl = prompt('请输入笔记链接');
+        if (!rawUrl) return;
+
+        const url = this.normalizeUrl(rawUrl.trim());
+        if (!this.isValidUrl(url)) {
+            this.showToast('请输入有效链接', 'error');
+            return;
+        }
+
+        const name = prompt('给这个链接起个名字（可选）')?.trim() || url;
+        storage.saveNote(this.currentYear, this.currentWeek, {
+            name,
+            type: 'link',
+            kind: 'link',
+            url
+        });
+
+        this.showToast('链接已添加');
+        this.render();
+    }
+
+    /**
      * 删除笔记
      */
     deleteNote(noteId) {
@@ -365,6 +432,11 @@ class WeeklyReportApp {
      * 下载笔记
      */
     downloadNote(note) {
+        if (note.kind === 'link' || note.type === 'link') {
+            window.open(note.url || note.content, '_blank', 'noopener');
+            return;
+        }
+
         const link = document.createElement('a');
         link.href = note.content;
         link.download = note.name;
@@ -451,6 +523,7 @@ class WeeklyReportApp {
      */
     render() {
         this.renderWeekDisplay();
+        this.renderHeroMetrics();
         this.renderTasks();
         this.renderHarvests();
         this.renderNotes();
@@ -469,6 +542,22 @@ class WeeklyReportApp {
         document.getElementById('currentWeekTitle').textContent = `${this.currentYear}年第${this.currentWeek}周`;
         document.getElementById('currentWeekDates').textContent = `${dateRange.start} - ${dateRange.end}`;
         document.getElementById('sidebarWeek').textContent = `第${this.currentWeek}周`;
+    }
+
+    /**
+     * 渲染顶部概览数据
+     */
+    renderHeroMetrics() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const notes = storage.getWeekNotes(this.currentYear, this.currentWeek);
+        const incompleteTasks = weekData.tasks.filter(task => {
+            const progress = task.progress !== undefined ? task.progress : 100;
+            return progress < 100;
+        });
+
+        document.getElementById('heroTasksCount').textContent = weekData.tasks.length;
+        document.getElementById('heroPlansCount').textContent = weekData.harvests.length + incompleteTasks.length;
+        document.getElementById('heroNotesCount').textContent = notes.length;
     }
 
     /**
@@ -497,8 +586,8 @@ class WeeklyReportApp {
                             <path d="M18 24l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </div>
-                    <p>本周还没有完成事项</p>
-                    <button class="link-btn" onclick="app.openModal('task')">添加第一个事项</button>
+                    <p>本周还没有工作记录</p>
+                    <button class="link-btn" onclick="app.openModal('task')">添加第一条工作</button>
                 </div>
             `;
             return;
@@ -515,13 +604,13 @@ class WeeklyReportApp {
         const container = document.getElementById('harvestsList');
         const countEl = document.getElementById('harvestsCount');
 
-        // 获取本周未完成的事项（进度<100%）
+        // 获取本周未完成的工作（进度<100%）
         const incompleteTasks = weekData.tasks.filter(task => {
             const progress = task.progress !== undefined ? task.progress : 100;
             return progress < 100;
         });
 
-        // 合并手动添加的下周计划和未完成事项
+        // 合并手动添加的下周计划和未完成工作
         const allPlans = [...weekData.harvests, ...incompleteTasks.map(task => ({
             ...task,
             isFromIncomplete: true,
@@ -636,7 +725,7 @@ class WeeklyReportApp {
                             <path d="M16 20h16M16 28h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
                     </div>
-                    <p>暂无笔记文件</p>
+                    <p>暂无笔记文件或链接</p>
                     <button class="link-btn" onclick="document.getElementById('noteInput').click()">上传第一个笔记</button>
                 </div>
             `;
@@ -645,20 +734,27 @@ class WeeklyReportApp {
 
         container.innerHTML = notes.map(note => {
             const iconClass = this.getFileIconClass(note.type);
+            const isLink = note.kind === 'link' || note.type === 'link';
             return `
                 <div class="note-card" onclick='app.downloadNote(${JSON.stringify(note).replace(/'/g, "\\'")})'>
                     <div class="note-icon ${iconClass}">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M13 2v7h7" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
+                        ${isLink
+                            ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M10 7l2-2a4 4 0 015.657 5.657L15 13.314M14 17l-2 2a4 4 0 01-5.657-5.657L9 10.686" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                              </svg>`
+                            : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M13 2v7h7" stroke="currentColor" stroke-width="1.5"/>
+                              </svg>`}
                     </div>
                     <div class="note-name">${this.escapeHtml(note.name)}</div>
-                    <div class="note-size">${this.formatFileSize(note.size)}</div>
+                    <div class="note-size">${isLink ? '链接' : this.formatFileSize(note.size)}</div>
                     <div class="note-actions" onclick="event.stopPropagation()">
                         <button class="item-action-btn" onclick="app.downloadNote(${JSON.stringify(note).replace(/'/g, "\\'")})" title="下载">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M8 11V3M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                ${isLink
+                                    ? `<path d="M6 5l1.5-1.5a3 3 0 014.25 4.25L10 9.5M10 11l-1.5 1.5a3 3 0 01-4.25-4.25L6 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`
+                                    : `<path d="M8 11V3M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`}
                             </svg>
                         </button>
                         <button class="item-action-btn delete" onclick="app.deleteNote(${note.id})" title="删除">
@@ -676,6 +772,7 @@ class WeeklyReportApp {
      * 获取文件图标类
      */
     getFileIconClass(type) {
+        if (type === 'link') return 'link';
         if (type.includes('pdf')) return 'pdf';
         if (type.includes('word') || type.includes('document')) return 'doc';
         if (type.includes('image')) return 'image';
@@ -841,7 +938,7 @@ class WeeklyReportApp {
                 <div class="timeline-stats">
                     <div class="timeline-stat">
                         <div class="timeline-stat-value">${week.tasksCount}</div>
-                        <div class="timeline-stat-label">事项</div>
+                        <div class="timeline-stat-label">工作</div>
                     </div>
                     <div class="timeline-stat">
                         <div class="timeline-stat-value">${week.harvestsCount}</div>
@@ -868,15 +965,41 @@ class WeeklyReportApp {
     renderStats() {
         const stats = storage.getOverallStats();
         const totalNotes = storage.getTotalNotes();
-        const totalComments = storage.getTotalComments();
+        const commentStats = storage.getCommentStats();
 
         document.getElementById('statWeeks').textContent = stats.totalWeeks;
         document.getElementById('statTasks').textContent = stats.totalTasks;
         document.getElementById('statHarvests').textContent = stats.totalHarvests;
         document.getElementById('statNotes').textContent = totalNotes;
+        document.getElementById('statComments').textContent = commentStats.totalComments;
 
         // 渲染趋势图
         this.renderTrendChart();
+        this.renderCommentSummary(commentStats);
+    }
+
+    /**
+     * 渲染评论统计总结
+     */
+    renderCommentSummary(commentStats) {
+        const container = document.getElementById('commentSummary');
+        const latest = commentStats.latestComment;
+
+        container.innerHTML = `
+            <div class="comment-summary-item">
+                <span>回复数</span>
+                <strong>${commentStats.totalReplies}</strong>
+            </div>
+            <div class="comment-summary-item">
+                <span>参与者</span>
+                <strong>${commentStats.totalParticipants}</strong>
+            </div>
+            <div class="comment-summary-item wide">
+                <span>最新评论</span>
+                <strong>${latest ? this.escapeHtml(latest.author) : '暂无'}</strong>
+                <p>${latest ? this.escapeHtml(latest.content) : '还没有收到评论'}</p>
+            </div>
+        `;
     }
 
     /**
@@ -901,7 +1024,7 @@ class WeeklyReportApp {
                         <div style="flex: 1; text-align: center;">
                             <div class="chart-bar ${d.tasksCount + d.harvestsCount > 0 ? 'has-data' : ''}"
                                  style="height: ${Math.max(height, 20)}px;"
-                                 title="事项: ${d.tasksCount}, 收获: ${d.harvestsCount}">
+                                 title="工作: ${d.tasksCount}, 收获: ${d.harvestsCount}">
                             </div>
                             <div class="chart-label">W${d.weekNum}</div>
                         </div>
@@ -940,6 +1063,74 @@ class WeeklyReportApp {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    /**
+     * 规范化链接
+     */
+    normalizeUrl(url) {
+        if (!/^https?:\/\//i.test(url)) {
+            return `https://${url}`;
+        }
+        return url;
+    }
+
+    /**
+     * 判断是否为有效链接
+     */
+    isValidUrl(url) {
+        try {
+            const parsed = new URL(url);
+            return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * 编码分享数据
+     */
+    encodeSharePayload(text) {
+        const bytes = new TextEncoder().encode(text);
+        let binary = '';
+        bytes.forEach(byte => {
+            binary += String.fromCharCode(byte);
+        });
+
+        return btoa(binary)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/g, '');
+    }
+
+    /**
+     * 解码分享数据
+     */
+    decodeSharePayload(payload) {
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+    }
+
+    /**
+     * 复制文本
+     */
+    async copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
     }
 
     /**

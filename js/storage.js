@@ -7,6 +7,7 @@ class StorageManager {
         this.STORAGE_KEY = 'apple_weekly_report_v2';
         this.NOTES_KEY = 'apple_weekly_notes_v2';
         this.COMMENTS_KEY = 'apple_weekly_comments_v2';
+        this.SHARE_VERSION = 1;
     }
 
     /**
@@ -58,6 +59,50 @@ class StorageManager {
             console.error('读取数据失败:', e);
             return {};
         }
+    }
+
+    /**
+     * 导出可分享数据
+     */
+    exportShareData() {
+        const notes = this.getAllNotes();
+        const safeNotes = {};
+
+        for (const weekId in notes) {
+            safeNotes[weekId] = notes[weekId].map(note => {
+                const isLink = note.kind === 'link' || note.type === 'link';
+                return {
+                    id: note.id,
+                    name: note.name,
+                    size: note.size || 0,
+                    type: note.type || (isLink ? 'link' : 'file'),
+                    kind: isLink ? 'link' : 'file',
+                    url: isLink ? (note.url || note.content || '') : null,
+                    uploadedAt: note.uploadedAt
+                };
+            });
+        }
+
+        return {
+            version: this.SHARE_VERSION,
+            exportedAt: new Date().toISOString(),
+            reports: this.getAllData(),
+            notes: safeNotes,
+            comments: this.getAllComments()
+        };
+    }
+
+    /**
+     * 导入分享数据
+     */
+    importShareData(shareData) {
+        if (!shareData || typeof shareData !== 'object') {
+            throw new Error('分享数据无效');
+        }
+
+        this.saveAllData(shareData.reports || {});
+        localStorage.setItem(this.NOTES_KEY, JSON.stringify(shareData.notes || {}));
+        localStorage.setItem(this.COMMENTS_KEY, JSON.stringify(shareData.comments || {}));
     }
 
     /**
@@ -238,9 +283,11 @@ class StorageManager {
         const note = {
             id: Date.now() + Math.random(),
             name: noteData.name,
-            size: noteData.size,
-            type: noteData.type,
-            content: noteData.content,
+            size: noteData.size || 0,
+            type: noteData.type || 'link',
+            content: noteData.content || '',
+            url: noteData.url || null,
+            kind: noteData.kind || 'file',
             uploadedAt: new Date().toISOString()
         };
 
@@ -391,6 +438,38 @@ class StorageManager {
             total += allComments[weekId].length;
         }
         return total;
+    }
+
+    /**
+     * 获取评论统计汇总
+     */
+    getCommentStats() {
+        const allComments = this.getAllComments();
+        let totalComments = 0;
+        let totalReplies = 0;
+        let latestComment = null;
+        const authors = new Set();
+
+        for (const weekId in allComments) {
+            allComments[weekId].forEach(comment => {
+                totalComments++;
+                authors.add(comment.author || '匿名用户');
+                if (!latestComment || new Date(comment.createdAt) > new Date(latestComment.createdAt)) {
+                    latestComment = comment;
+                }
+
+                const replies = comment.replies || [];
+                totalReplies += replies.length;
+                replies.forEach(reply => authors.add(reply.author || '匿名用户'));
+            });
+        }
+
+        return {
+            totalComments,
+            totalReplies,
+            totalParticipants: authors.size,
+            latestComment
+        };
     }
 }
 

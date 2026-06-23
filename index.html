@@ -85,11 +85,17 @@
                 </div>
 
                 <div class="top-actions">
+                    <button class="action-btn ghost" id="shareReportBtn">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M12.5 6.5L9 3m0 0L5.5 6.5M9 3v9M4 9v4a2 2 0 002 2h6a2 2 0 002-2V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>分享链接</span>
+                    </button>
                     <button class="action-btn primary" id="addTaskBtn">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                             <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
-                        <span>添加事项</span>
+                        <span>添加工作</span>
                     </button>
                     <button class="action-btn secondary" id="addHarvestBtn">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -101,12 +107,51 @@
                 </div>
             </header>
 
+            <section class="dashboard-hero" aria-label="周报概览">
+                <div class="hero-copy">
+                    <p class="hero-kicker">Weekly Report Command Center</p>
+                    <h2>Just believe and keep moving</h2>
+                </div>
+                <div class="hero-metrics">
+                    <article class="metric-card is-hot">
+                        <div>
+                            <span class="metric-label">本周工作</span>
+                            <strong id="heroTasksCount">0</strong>
+                            <small>THIS WEEK</small>
+                        </div>
+                        <svg class="sparkline" viewBox="0 0 120 42" aria-hidden="true">
+                            <path d="M4 34 C22 28, 28 16, 45 21 S70 32, 86 18 S108 8, 116 10" />
+                        </svg>
+                    </article>
+                    <article class="metric-card">
+                        <div>
+                            <span class="metric-label">下周计划</span>
+                            <strong id="heroPlansCount">0</strong>
+                            <small>NEXT SCAN</small>
+                        </div>
+                        <svg class="sparkline teal" viewBox="0 0 120 42" aria-hidden="true">
+                            <path d="M4 31 C22 30, 35 22, 48 24 S68 24, 82 15 S102 7, 116 6" />
+                        </svg>
+                    </article>
+                    <article class="metric-card">
+                        <div>
+                            <span class="metric-label">笔记/链接</span>
+                            <strong id="heroNotesCount">0</strong>
+                            <small>READY</small>
+                        </div>
+                        <svg class="sparkline teal" viewBox="0 0 120 42" aria-hidden="true">
+                            <path d="M4 28 C20 20, 36 26, 52 17 S80 14, 96 10 S110 7, 116 5" />
+                        </svg>
+                    </article>
+                </div>
+            </section>
+
             <!-- 内容视图容器 -->
             <div class="content-views">
                 <!-- 本周视图 -->
                 <section class="view current-view active" id="currentView">
                     <div class="content-grid">
-                        <!-- 完成事项 -->
+                        <!-- 本周工作 -->
                         <div class="content-section">
                             <div class="section-header">
                                 <div class="section-title">
@@ -116,7 +161,7 @@
                                             <path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     </div>
-                                    <h2>完成事项</h2>
+                                    <h2>本周工作</h2>
                                 </div>
                                 <span class="badge" id="tasksCount">0</span>
                             </div>
@@ -128,8 +173,8 @@
                                             <path d="M18 24l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     </div>
-                                    <p>本周还没有完成事项</p>
-                                    <button class="link-btn" onclick="app.openModal('task')">添加第一个事项</button>
+                                    <p>本周还没有工作记录</p>
+                                    <button class="link-btn" onclick="app.openModal('task')">添加第一条工作</button>
                                 </div>
                             </div>
                         </div>
@@ -175,12 +220,20 @@
                                     </div>
                                     <h2>个人笔记</h2>
                                 </div>
-                                <button class="upload-btn" id="uploadNoteBtn">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M8 11V5M5 8l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    <span>上传</span>
-                                </button>
+                                <div class="note-actions-header">
+                                    <button class="upload-btn" id="addNoteLinkBtn">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M7 5l1.5-1.5a3 3 0 014.25 4.25L11 9.5M9 11l-1.5 1.5a3 3 0 01-4.25-4.25L5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <span>链接</span>
+                                    </button>
+                                    <button class="upload-btn" id="uploadNoteBtn">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M8 11V5M5 8l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span>上传</span>
+                                    </button>
+                                </div>
                                 <input type="file" id="noteInput" accept=".txt,.md,.pdf,.doc,.docx,.jpg,.png" hidden multiple>
                             </div>
                             <div class="section-content notes-grid" id="notesList">
@@ -289,7 +342,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="statTasks">0</div>
-                            <div class="stat-label">完成事项</div>
+                            <div class="stat-label">本周工作</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="statHarvests">0</div>
@@ -297,13 +350,23 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="statNotes">0</div>
-                            <div class="stat-label">笔记文件</div>
+                            <div class="stat-label">笔记/链接</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statComments">0</div>
+                            <div class="stat-label">评论</div>
                         </div>
                     </div>
                     <div class="stats-chart">
                         <h3>周报趋势</h3>
                         <div class="chart-container" id="trendChart">
                             <!-- 简单的趋势图 -->
+                        </div>
+                    </div>
+                    <div class="stats-chart comment-summary-card">
+                        <h3>评论总结</h3>
+                        <div class="comment-summary-grid" id="commentSummary">
+                            <!-- 评论统计总结 -->
                         </div>
                     </div>
                 </section>
@@ -315,7 +378,7 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="itemModal">
             <div class="modal-header">
-                <h2 id="modalTitle">添加完成事项</h2>
+                <h2 id="modalTitle">添加本周工作</h2>
                 <button class="modal-close" id="closeModal" aria-label="关闭">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -377,7 +440,7 @@
                         <label for="itemDDL">截止日期 (DDL) <span class="required">*</span></label>
                         <input type="date" id="itemDDL">
                         <small style="color: var(--orange); font-size: 12px; margin-top: 4px; display: block;">
-                            未完成事项需要设置截止日期
+                            未完成工作需要设置截止日期
                         </small>
                     </div>
 
