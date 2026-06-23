@@ -6,6 +6,7 @@ class StorageManager {
     constructor() {
         this.STORAGE_KEY = 'apple_weekly_report_v2';
         this.NOTES_KEY = 'apple_weekly_notes_v2';
+        this.COMMENTS_KEY = 'apple_weekly_comments_v2';
     }
 
     /**
@@ -289,6 +290,104 @@ class StorageManager {
         let total = 0;
         for (const weekId in allNotes) {
             total += allNotes[weekId].length;
+        }
+        return total;
+    }
+
+    /**
+     * 评论相关方法
+     */
+
+    /**
+     * 获取所有评论
+     */
+    getAllComments() {
+        try {
+            const comments = localStorage.getItem(this.COMMENTS_KEY);
+            return comments ? JSON.parse(comments) : {};
+        } catch (e) {
+            console.error('读取评论失败:', e);
+            return {};
+        }
+    }
+
+    /**
+     * 获取指定周的评论
+     */
+    getWeekComments(year, week) {
+        const weekId = this.getWeekId(year, week);
+        const allComments = this.getAllComments();
+        return allComments[weekId] || [];
+    }
+
+    /**
+     * 添加评论
+     */
+    addComment(year, week, comment) {
+        const allComments = this.getAllComments();
+        const weekId = this.getWeekId(year, week);
+
+        if (!allComments[weekId]) {
+            allComments[weekId] = [];
+        }
+
+        const newComment = {
+            id: Date.now() + Math.random(),
+            author: comment.author || '匿名用户',
+            content: comment.content,
+            createdAt: new Date().toISOString(),
+            replies: []
+        };
+
+        allComments[weekId].push(newComment);
+        localStorage.setItem(this.COMMENTS_KEY, JSON.stringify(allComments));
+        return newComment;
+    }
+
+    /**
+     * 回复评论
+     */
+    replyToComment(year, week, commentId, reply) {
+        const allComments = this.getAllComments();
+        const weekId = this.getWeekId(year, week);
+
+        if (allComments[weekId]) {
+            const comment = allComments[weekId].find(c => c.id === commentId);
+            if (comment) {
+                comment.replies.push({
+                    id: Date.now() + Math.random(),
+                    author: reply.author || '匿名用户',
+                    content: reply.content,
+                    createdAt: new Date().toISOString()
+                });
+                localStorage.setItem(this.COMMENTS_KEY, JSON.stringify(allComments));
+                return comment;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 删除评论
+     */
+    deleteComment(year, week, commentId) {
+        const allComments = this.getAllComments();
+        const weekId = this.getWeekId(year, week);
+
+        if (allComments[weekId]) {
+            allComments[weekId] = allComments[weekId].filter(c => c.id !== commentId);
+            localStorage.setItem(this.COMMENTS_KEY, JSON.stringify(allComments));
+        }
+    }
+
+    /**
+     * 获取评论总数
+     */
+    getTotalComments() {
+        const allComments = this.getAllComments();
+        let total = 0;
+        for (const weekId in allComments) {
+            total += allComments[weekId].length;
         }
         return total;
     }

@@ -74,6 +74,14 @@ class WeeklyReportApp {
         });
         document.getElementById('noteInput').addEventListener('change', (e) => this.handleNoteUpload(e));
 
+        // 评论提交
+        document.getElementById('submitCommentBtn').addEventListener('click', () => this.submitComment());
+        document.getElementById('commentContent').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                this.submitComment();
+            }
+        });
+
         // 键盘快捷键
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && document.getElementById('modalOverlay').classList.contains('active')) {
@@ -332,6 +340,65 @@ class WeeklyReportApp {
     }
 
     /**
+     * 提交评论
+     */
+    submitComment() {
+        const author = document.getElementById('commentAuthor').value.trim() || '匿名用户';
+        const content = document.getElementById('commentContent').value.trim();
+
+        if (!content) {
+            this.showToast('请输入评论内容', 'error');
+            document.getElementById('commentContent').focus();
+            return;
+        }
+
+        storage.addComment(this.currentYear, this.currentWeek, {
+            author,
+            content
+        });
+
+        // 清空输入
+        document.getElementById('commentAuthor').value = '';
+        document.getElementById('commentContent').value = '';
+
+        this.showToast('评论发布成功');
+        this.renderComments();
+    }
+
+    /**
+     * 删除评论
+     */
+    deleteComment(commentId) {
+        if (confirm('确定要删除这条评论吗？')) {
+            storage.deleteComment(this.currentYear, this.currentWeek, commentId);
+            this.showToast('评论已删除');
+            this.renderComments();
+        }
+    }
+
+    /**
+     * 提交回复
+     */
+    submitReply(commentId, replyInput) {
+        const author = '匿名用户'; // 回复默认匿名
+        const content = replyInput.value.trim();
+
+        if (!content) {
+            this.showToast('请输入回复内容', 'error');
+            replyInput.focus();
+            return;
+        }
+
+        storage.replyToComment(this.currentYear, this.currentWeek, commentId, {
+            author,
+            content
+        });
+
+        this.showToast('回复成功');
+        this.renderComments();
+    }
+
+    /**
      * 显示提示
      */
     showToast(message, type = 'success') {
@@ -355,6 +422,7 @@ class WeeklyReportApp {
         this.renderTasks();
         this.renderHarvests();
         this.renderNotes();
+        this.renderComments();
         this.renderHistory();
         this.renderStats();
     }
@@ -549,6 +617,82 @@ class WeeklyReportApp {
     }
 
     /**
+     * 渲染评论列表
+     */
+    renderComments() {
+        const comments = storage.getWeekComments(this.currentYear, this.currentWeek);
+        const container = document.getElementById('commentsList');
+        const countEl = document.getElementById('commentsCount');
+
+        countEl.textContent = comments.length;
+
+        if (comments.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <path d="M8 12h32a4 4 0 014 4v16a4 4 0 01-4 4h-8l-8 8-8-8H8a4 4 0 01-4-4V16a4 4 0 014-4z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 22h24M12 30h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <p>还没有人评论，来发表你的看法吧</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = comments.map(comment => {
+            const avatar = comment.author.charAt(0).toUpperCase();
+            const repliesHtml = comment.replies && comment.replies.length > 0
+                ? `<div class="replies-section">
+                    ${comment.replies.map(reply => {
+                        const replyAvatar = reply.author.charAt(0).toUpperCase();
+                        return `
+                            <div class="reply-item">
+                                <div class="reply-header">
+                                    <div class="reply-author">
+                                        <div class="reply-avatar">${replyAvatar}</div>
+                                        <span class="reply-name">${this.escapeHtml(reply.author)}</span>
+                                    </div>
+                                    <span class="reply-date">${this.formatDateTime(reply.createdAt)}</span>
+                                </div>
+                                <div class="reply-content">${this.escapeHtml(reply.content)}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                   </div>`
+                : '';
+
+            return `
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div class="comment-author">
+                            <div class="comment-avatar">${avatar}</div>
+                            <div>
+                                <div class="comment-name">${this.escapeHtml(comment.author)}</div>
+                                <div class="comment-date">${this.formatDateTime(comment.createdAt)}</div>
+                            </div>
+                        </div>
+                        <div class="comment-actions">
+                            <button class="comment-action-btn delete" onclick="app.deleteComment(${comment.id})" title="删除">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="comment-content">${this.escapeHtml(comment.content)}</div>
+                    ${repliesHtml}
+                    <div class="reply-input-area">
+                        <input type="text" placeholder="写下你的回复..." id="reply-${comment.id}" maxlength="300">
+                        <button onclick="app.submitReply(${comment.id}, document.getElementById('reply-${comment.id}'))">回复</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
      * 渲染历史周报
      */
     renderHistory() {
@@ -607,6 +751,7 @@ class WeeklyReportApp {
     renderStats() {
         const stats = storage.getOverallStats();
         const totalNotes = storage.getTotalNotes();
+        const totalComments = storage.getTotalComments();
 
         document.getElementById('statWeeks').textContent = stats.totalWeeks;
         document.getElementById('statTasks').textContent = stats.totalTasks;
@@ -656,6 +801,19 @@ class WeeklyReportApp {
         if (!dateString) return '';
         const date = new Date(dateString);
         return `${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+
+    /**
+     * 格式化日期时间
+     */
+    formatDateTime(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${month}月${day}日 ${hours}:${minutes}`;
     }
 
     /**
