@@ -82,6 +82,16 @@ https://YOUR_USERNAME.github.io/weekly-report/
 
 注意：上传的文件本体不会塞进网址里，只会共享文件名和大小；网页链接型笔记可以正常共享。
 
+### 让普通短链接显示最新内容
+如果不想发很长的分享链接，可以使用项目里的 `data/report.json`：
+
+1. 打开网站并录好周报内容。
+2. 点击右上角 **导出发布数据**。
+3. 把下载得到的 `report.json` 覆盖到项目里的 `data/report.json`。
+4. 提交并推送到 GitHub。
+
+之后别人打开普通短链接 `https://monnica-wf.github.io/weekly-report/`，页面会自动读取这份公开数据。
+
 ### 自定义域名（可选）
 1. 在仓库根目录创建 `CNAME` 文件
 2. 文件内容填写你的域名，如：`weekly.yourdomain.com`

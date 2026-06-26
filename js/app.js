@@ -19,8 +19,11 @@ class WeeklyReportApp {
     /**
      * 初始化应用
      */
-    init() {
-        this.importShareFromUrl();
+    async init() {
+        const importedFromShare = this.importShareFromUrl();
+        if (!importedFromShare) {
+            await this.loadPublishedData();
+        }
         this.bindEvents();
         this.render();
         this.setDefaultDates();
@@ -46,6 +49,7 @@ class WeeklyReportApp {
 
         // 添加按钮
         document.getElementById('shareReportBtn').addEventListener('click', () => this.shareReport());
+        document.getElementById('exportPublishDataBtn').addEventListener('click', () => this.exportPublishData());
         document.getElementById('addTaskBtn').addEventListener('click', () => this.openModal('task'));
         document.getElementById('addHarvestBtn').addEventListener('click', () => this.openModal('harvest'));
 
@@ -125,16 +129,39 @@ class WeeklyReportApp {
      */
     importShareFromUrl() {
         const match = window.location.hash.slice(1).match(/(?:^|&)share=([^&]+)/);
-        if (!match) return;
+        if (!match) return false;
 
         try {
             const json = this.decodeSharePayload(match[1]);
             storage.importShareData(JSON.parse(json));
             history.replaceState(null, '', window.location.pathname + window.location.search);
             this.showToast('已载入分享数据');
+            return true;
         } catch (e) {
             console.error('导入分享数据失败:', e);
             this.showToast('分享链接无效', 'error');
+            return false;
+        }
+    }
+
+    /**
+     * 加载 GitHub Pages 上发布的数据
+     */
+    async loadPublishedData() {
+        try {
+            const response = await fetch(`data/report.json?v=${Date.now()}`, { cache: 'no-store' });
+            if (!response.ok) return;
+
+            const publishedData = await response.json();
+            const publishedVersion = publishedData.publishedAt || publishedData.exportedAt || '';
+            const shouldImport = !storage.hasLocalContent();
+
+            if (!shouldImport) return;
+
+            storage.importShareData(publishedData);
+            storage.setPublishedVersion(publishedVersion);
+        } catch (e) {
+            console.info('未加载公开发布数据:', e.message);
         }
     }
 
@@ -157,6 +184,21 @@ class WeeklyReportApp {
             console.error('生成分享链接失败:', e);
             this.showToast('生成分享链接失败', 'error');
         }
+    }
+
+    /**
+     * 导出用于 GitHub Pages 的发布数据
+     */
+    exportPublishData() {
+        const data = JSON.stringify(storage.exportPublishedData(), null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'report.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        this.showToast('已导出 report.json');
     }
 
     /**

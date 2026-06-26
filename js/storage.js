@@ -7,6 +7,7 @@ class StorageManager {
         this.STORAGE_KEY = 'apple_weekly_report_v2';
         this.NOTES_KEY = 'apple_weekly_notes_v2';
         this.COMMENTS_KEY = 'apple_weekly_comments_v2';
+        this.PUBLISHED_VERSION_KEY = 'apple_weekly_published_version_v2';
         this.SHARE_VERSION = 1;
     }
 
@@ -93,6 +94,16 @@ class StorageManager {
     }
 
     /**
+     * 导出公开发布数据
+     */
+    exportPublishedData() {
+        return {
+            ...this.exportShareData(),
+            publishedAt: new Date().toISOString()
+        };
+    }
+
+    /**
      * 导入分享数据
      */
     importShareData(shareData) {
@@ -103,6 +114,33 @@ class StorageManager {
         this.saveAllData(shareData.reports || {});
         localStorage.setItem(this.NOTES_KEY, JSON.stringify(shareData.notes || {}));
         localStorage.setItem(this.COMMENTS_KEY, JSON.stringify(shareData.comments || {}));
+    }
+
+    /**
+     * 判断本地是否已有内容
+     */
+    hasLocalContent() {
+        const reports = this.getAllData();
+        const notes = this.getAllNotes();
+        const comments = this.getAllComments();
+
+        return Object.keys(reports).length > 0 ||
+            Object.keys(notes).some(weekId => notes[weekId].length > 0) ||
+            Object.keys(comments).some(weekId => comments[weekId].length > 0);
+    }
+
+    /**
+     * 获取已导入公开数据版本
+     */
+    getPublishedVersion() {
+        return localStorage.getItem(this.PUBLISHED_VERSION_KEY) || '';
+    }
+
+    /**
+     * 设置已导入公开数据版本
+     */
+    setPublishedVersion(version) {
+        localStorage.setItem(this.PUBLISHED_VERSION_KEY, version || '');
     }
 
     /**

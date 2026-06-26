@@ -46,6 +46,11 @@
 
 上传的文件不会打包进网址；如果要共享资料，建议用「链接」添加云文档或网页地址。
 
+### 让普通短链接显示内容
+如果希望别人直接打开 GitHub Pages 短链接就看到公开周报，在页面里录好内容后点击「导出发布数据」，把下载得到的 `report.json` 放到项目的 `data/report.json`，再提交并推送到 GitHub。
+
+推送后，普通链接 `https://monnica-wf.github.io/weekly-report/` 会读取 `data/report.json` 里的公开数据。
+
 ### 本地运行
 ```bash
 # 克隆仓库
