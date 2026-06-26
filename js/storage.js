@@ -125,8 +125,36 @@ class StorageManager {
         return allData[weekId] || {
             tasks: [],
             harvests: [],
-            notes: []
+            notes: [],
+            thoughts: ''
         };
+    }
+
+    /**
+     * 保存周数据
+     */
+    saveWeekData(year, week, data) {
+        const weekId = this.getWeekId(year, week);
+        const allData = this.getAllData();
+        allData[weekId] = data;
+        this.saveAllData(allData);
+    }
+
+    /**
+     * 保存本周心得
+     */
+    saveThoughts(year, week, thoughts) {
+        const weekData = this.getWeekData(year, week);
+        weekData.thoughts = thoughts;
+        this.saveWeekData(year, week, weekData);
+    }
+
+    /**
+     * 获取本周心得
+     */
+    getThoughts(year, week) {
+        const weekData = this.getWeekData(year, week);
+        return weekData.thoughts || '';
     }
 
     /**
@@ -147,7 +175,9 @@ class StorageManager {
         const newItem = {
             id: Date.now() + Math.random(),
             title: item.title,
+            projectName: item.projectName || '',
             content: item.content || '',
+            reflection: item.reflection || '',
             category: item.category || 'ai',
             priority: item.priority || 'p1',
             tags: item.tags || [],
@@ -156,6 +186,7 @@ class StorageManager {
             startDate: item.startDate || null,
             endDate: item.endDate || null,
             ddl: item.ddl || null,
+            milestones: item.milestones || [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };

@@ -150,6 +150,27 @@
             <div class="content-views">
                 <!-- 本周视图 -->
                 <section class="view current-view active" id="currentView">
+                    <!-- 时间线模块 -->
+                    <div class="timeline-section" id="timelineSection">
+                        <div class="timeline-header">
+                            <div class="timeline-title">
+                                <div class="section-icon teal">
+                                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                        <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
+                                        <path d="M9 6v3l2 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <h2>时间线</h2>
+                            </div>
+                            <span class="badge" id="milestonesCount">0</span>
+                        </div>
+                        <div id="timelineList">
+                            <div class="timeline-empty">
+                                <p>暂无里程碑节点，编辑工作项时可添加里程碑</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="content-grid">
                         <!-- 本周工作 -->
                         <div class="content-section">
@@ -261,10 +282,32 @@
                                     </div>
                                     <h2>心得体会</h2>
                                 </div>
+                                <button class="edit-thoughts-btn" id="editThoughtsBtn">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M11.5 2.5l2 2M2 12v2h2l7.5-7.5-2-2L2 12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span>写心得</span>
+                                </button>
                             </div>
-                            <div class="section-content thoughts-content" id="thoughtsList">
-                                <div class="empty-state compact">
-                                    <p>暂无心得体会</p>
+                            <div class="section-content thoughts-content">
+                                <!-- 本周心得输入框（默认隐藏） -->
+                                <div class="thoughts-input-area" id="thoughtsInputArea" style="display: none;">
+                                    <textarea id="weekThoughts" placeholder="写下本周的心得体会、经验总结、感悟..." rows="4" maxlength="1000"></textarea>
+                                    <div class="thoughts-actions">
+                                        <button class="cancel-thoughts-btn" id="cancelThoughtsBtn">取消</button>
+                                        <button class="save-thoughts-btn" id="saveThoughtsBtn">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                <path d="M8 12l3-3M8 12V5M8 12L5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            保存
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- 心得列表 -->
+                                <div id="thoughtsList">
+                                    <div class="empty-state compact">
+                                        <p>暂无心得体会</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -388,13 +431,28 @@
             <div class="modal-body">
                 <form id="itemForm">
                     <div class="form-group">
+                        <label for="itemProjectSelect">项目名称</label>
+                        <div class="project-input-wrapper">
+                            <select id="itemProjectSelect">
+                                <option value="">选择已有项目...</option>
+                            </select>
+                            <input type="text" id="itemProjectName" placeholder="或手动输入新项目">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label for="itemTitle">标题 <span class="required">*</span></label>
                         <input type="text" id="itemTitle" placeholder="简短描述这件事..." required>
                     </div>
 
                     <div class="form-group">
-                        <label for="itemContent">详细内容</label>
-                        <textarea id="itemContent" rows="4" placeholder="补充说明、心得体会等..."></textarea>
+                        <label for="itemContent">工作内容</label>
+                        <textarea id="itemContent" rows="3" placeholder="详细描述工作内容..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemReflection">心得体会</label>
+                        <textarea id="itemReflection" rows="2" placeholder="记录收获、感悟、经验总结..."></textarea>
                     </div>
 
                     <div class="form-row">
@@ -480,6 +538,26 @@
                             <input type="range" id="itemProgress" min="0" max="100" value="100">
                             <span class="progress-value" id="progressValue">100%</span>
                         </div>
+                    </div>
+
+                    <!-- 里程碑编辑器 -->
+                    <div class="milestones-editor">
+                        <h3>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M8 5v3l2 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            里程碑节点
+                        </h3>
+                        <div class="milestones-list" id="milestonesList">
+                            <!-- 动态填充 -->
+                        </div>
+                        <button type="button" class="add-milestone-btn" id="addMilestoneBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            添加里程碑
+                        </button>
                     </div>
                 </form>
             </div>

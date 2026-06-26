@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>里程碑测试</title>
+</head>
+<body>
+    <h1>里程碑自动添加到下周计划测试</h1>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        let logs = [];
+
+        function log(msg) {
+            logs.push(msg);
+            console.log(msg);
+        }
+
+        // 模拟 getWeekNumber
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // 当前周
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentWeek = getWeekNumber(now);
+
+        // 下周
+        let nextWeek = currentWeek + 1;
+        let nextYear = currentYear;
+        if (nextWeek > 52) {
+            nextWeek = 1;
+            nextYear++;
+        }
+
+        log('=== 当前信息 ===');
+        log('今天: ' + now.toISOString().split('T')[0]);
+        log('当前周: ' + currentYear + '年 第' + currentWeek + '周');
+        log('下周: ' + nextYear + '年 第' + nextWeek + '周');
+        log('');
+
+        // 测试里程碑
+        const milestones = [
+            { title: '需求评审', expectedDate: '2026-06-24' },  // 本周
+            { title: '开发完成', expectedDate: '2026-06-25' },  // 本周
+            { title: '测试中', expectedDate: '2026-06-30' },    // 下周
+            { title: '验收上线', expectedDate: '2026-07-01' },  // 下周
+        ];
+
+        log('=== 里程碑分析 ===');
+        milestones.forEach((m, i) => {
+            const mDate = new Date(m.expectedDate);
+            const mWeek = getWeekNumber(mDate);
+            const mYear = mDate.getFullYear();
+            const isNextWeek = (mYear === nextYear && mWeek === nextWeek);
+
+            log('里程碑 ' + i + ': ' + m.title);
+            log('  日期: ' + m.expectedDate);
+            log('  属于: ' + mYear + '年 第' + mWeek + '周');
+            log('  是否下周: ' + (isNextWeek ? '✅ 是' : '❌ 否'));
+            log('');
+        });
+
+        log('=== 应添加到下周计划的里程碑 ===');
+        const toAdd = milestones.filter(m => {
+            const mDate = new Date(m.expectedDate);
+            const mWeek = getWeekNumber(mDate);
+            const mYear = mDate.getFullYear();
+            return mYear === nextYear && mWeek === nextWeek;
+        });
+
+        if (toAdd.length > 0) {
+            toAdd.forEach(m => log('- ' + m.title + ' (' + m.expectedDate + ')'));
+        } else {
+            log('无');
+        }
+
+        output.textContent = logs.join('\n');
+    </script>
+</body>
+</html>

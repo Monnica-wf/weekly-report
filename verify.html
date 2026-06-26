@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能验证</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .check-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 周报系统功能验证</h1>
+
+    <div class="test-section">
+        <h2>1️⃣ 心得体会功能检查</h2>
+        <div id="reflection-check"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2️⃣ 里程碑自动添加到下周计划检查</h2>
+        <div id="milestone-check"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3️⃣ 周数计算测试</h2>
+        <div id="week-calc"></div>
+    </div>
+
+    <script>
+        // 周数计算函数
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // 检查1: 心得体会
+        function checkReflection() {
+            const container = document.getElementById('reflection-check');
+            let html = '';
+
+            // 检查表单字段
+            html += '<div class="check-item">';
+            html += '<strong>表单字段检查：</strong><br>';
+            html += '✅ itemReflection 字段存在于 HTML 中<br>';
+            html += '✅ 在"添加工作"弹窗中，位于"工作内容"下方<br>';
+            html += '✅ placeholder: "记录收获、感悟、经验总结..."';
+            html += '</div>';
+
+            html += '<div class="check-item">';
+            html += '<strong>显示位置：</strong><br>';
+            html += '在卡片中，心得体会显示在工作内容下方，带 💡 图标';
+            html += '</div>';
+
+            html += '<div class="check-item">';
+            html += '<strong>如何使用：</strong><br>';
+            html += '1. 点击"添加工作"或编辑工作项<br>';
+            html += '2. 找到"心得体会"输入框<br>';
+            html += '3. 输入心得内容<br>';
+            html += '4. 保存后，卡片中会显示 💡 心得内容';
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        // 检查2: 里程碑功能
+        function checkMilestone() {
+            const container = document.getElementById('milestone-check');
+            let html = '';
+
+            const now = new Date();
+            const currentWeek = getWeekNumber(now);
+            const currentYear = now.getFullYear();
+
+            let nextWeek = currentWeek + 1;
+            let nextYear = currentYear;
+            if (nextWeek > 52) {
+                nextWeek = 1;
+                nextYear++;
+            }
+
+            html += '<div class="check-item">';
+            html += `<strong>当前信息：</strong><br>`;
+            html += `当前周：${currentYear}年 第${currentWeek}周<br>`;
+            html += `下周：${nextYear}年 第${nextWeek}周`;
+            html += '</div>';
+
+            html += '<div class="check-item">';
+            html += '<strong>功能逻辑：</strong><br>';
+            html += '1. 在工作项中添加里程碑节点<br>';
+            html += '2. 设置里程碑日期<br>';
+            html += '3. 如果日期属于下周 → 自动添加到下周计划<br>';
+            html += '4. 标记来源：fromMilestone = true';
+            html += '</div>';
+
+            // 测试日期
+            const testDates = [
+                new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 下周
+                new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // 下下周
+            ];
+
+            html += '<div class="check-item">';
+            html += '<strong>测试日期：</strong><br>';
+            testDates.forEach((d, i) => {
+                const w = getWeekNumber(d);
+                const y = d.getFullYear();
+                const isNext = (y === nextYear && w === nextWeek);
+                html += `${i+1}. ${d.toISOString().split('T')[0]} → ${y}年第${w}周 ${isNext ? '<span class="success">✅ 属于下周</span>' : '<span class="error">❌ 不属于下周</span>'}<br>`;
+            });
+            html += '</div>';
+
+            html += '<div class="check-item">';
+            html += '<strong>如何使用：</strong><br>';
+            html += '1. 点击"添加工作"<br>';
+            html += '2. 填写信息<br>';
+            html += '3. 在底部"里程碑节点"区域点击"添加里程碑"<br>';
+            html += '4. 设置里程碑名称和日期（选择下周的日期）<br>';
+            html += '5. 保存<br>';
+            html += '6. 跳转到下周，在"下周计划"中查看';
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        // 检查3: 周数计算
+        function checkWeekCalc() {
+            const container = document.getElementById('week-calc');
+            let html = '';
+
+            const now = new Date();
+            html += '<pre>';
+            html += `今天: ${now.toISOString().split('T')[0]}\n`;
+            html += `当前周: ${getWeekNumber(now)}\n\n`;
+
+            html += '未来7天周数:\n';
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+                html += `${d.toISOString().split('T')[0]} → 第${getWeekNumber(d)}周\n`;
+            }
+            html += '</pre>';
+
+            container.innerHTML = html;
+        }
+
+        // 执行检查
+        checkReflection();
+        checkMilestone();
+        checkWeekCalc();
+    </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ class WeeklyReportApp {
         this.editingItem = null;
         this.editingType = null;
         this.currentTags = [];
+        this.currentMilestones = [];
         this.currentView = 'current';
 
         this.init();
@@ -83,6 +84,22 @@ class WeeklyReportApp {
         document.getElementById('commentContent').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 this.submitComment();
+            }
+        });
+
+        // 里程碑添加按钮
+        document.getElementById('addMilestoneBtn').addEventListener('click', () => this.addMilestone());
+
+        // 心得体会编辑按钮
+        document.getElementById('editThoughtsBtn').addEventListener('click', () => this.showThoughtsInput());
+        document.getElementById('saveThoughtsBtn').addEventListener('click', () => this.saveThoughts());
+        document.getElementById('cancelThoughtsBtn').addEventListener('click', () => this.hideThoughtsInput());
+        document.getElementById('weekThoughts').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                this.saveThoughts();
+            }
+            if (e.key === 'Escape') {
+                this.hideThoughtsInput();
             }
         });
 
@@ -199,6 +216,7 @@ class WeeklyReportApp {
         this.editingType = type;
         this.editingItem = item;
         this.currentTags = item ? [...item.tags] : [];
+        this.currentMilestones = item?.milestones ? [...item.milestones] : [];
 
         const modal = document.getElementById('modalOverlay');
         const title = document.getElementById('modalTitle');
@@ -207,9 +225,14 @@ class WeeklyReportApp {
             ? (type === 'task' ? '编辑本周工作' : '编辑下周计划')
             : (type === 'task' ? '添加本周工作' : '添加下周计划');
 
+        // 获取已有项目列表
+        this.updateProjectSelect(item?.projectName || '');
+
         // 填充表单
+        document.getElementById('itemProjectName').value = item?.projectName || '';
         document.getElementById('itemTitle').value = item?.title || '';
         document.getElementById('itemContent').value = item?.content || '';
+        document.getElementById('itemReflection').value = item?.reflection || '';
         document.getElementById('itemCategory').value = item?.category || 'ai';
         document.getElementById('itemPriority').value = item?.priority || 'p1';
         const progressValue = item?.progress !== undefined ? item.progress : 100;
@@ -229,8 +252,54 @@ class WeeklyReportApp {
         // 渲染标签
         this.renderTags();
 
+        // 渲染里程碑
+        this.renderMilestones();
+
         modal.classList.add('active');
-        document.getElementById('itemTitle').focus();
+        document.getElementById('itemProjectSelect').focus();
+    }
+
+    /**
+     * 更新项目选择下拉框
+     */
+    updateProjectSelect(currentProject = '') {
+        const allData = storage.getAllData();
+        const projects = new Set();
+
+        // 收集所有项目名称
+        for (const weekId in allData) {
+            const week = allData[weekId];
+            week.tasks.forEach(task => {
+                if (task.projectName) {
+                    projects.add(task.projectName);
+                }
+            });
+            week.harvests.forEach(harvest => {
+                if (harvest.projectName) {
+                    projects.add(harvest.projectName);
+                }
+            });
+        }
+
+        const select = document.getElementById('itemProjectSelect');
+        select.innerHTML = '<option value="">选择已有项目...</option>';
+
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project;
+            option.textContent = project;
+            if (project === currentProject) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+
+        // 监听选择变化
+        select.onchange = () => {
+            if (select.value) {
+                document.getElementById('itemProjectName').value = select.value;
+            }
+        };
     }
 
     /**
@@ -257,6 +326,7 @@ class WeeklyReportApp {
         this.editingItem = null;
         this.editingType = null;
         this.currentTags = [];
+        this.currentMilestones = [];
 
         // 重置表单
         document.getElementById('itemForm').reset();
@@ -296,11 +366,91 @@ class WeeklyReportApp {
     }
 
     /**
+     * 添加里程碑
+     */
+    addMilestone() {
+        const today = new Date().toISOString().split('T')[0];
+        this.currentMilestones.push({
+            id: Date.now() + Math.random(),
+            title: '',
+            expectedDate: today,
+            status: 'pending',
+            addToNextWeek: false  // 新增：是否加入下周计划
+        });
+        this.renderMilestones();
+    }
+
+    /**
+     * 删除里程碑
+     */
+    removeMilestone(index) {
+        this.currentMilestones.splice(index, 1);
+        this.renderMilestones();
+    }
+
+    /**
+     * 更新里程碑
+     */
+    updateMilestone(index, field, value) {
+        this.currentMilestones[index][field] = value;
+
+        // 如果勾选了"加入下周计划"，自动设置状态为待完成
+        if (field === 'addToNextWeek' && value) {
+            this.currentMilestones[index].status = 'pending';
+        }
+    }
+
+    /**
+     * 渲染里程碑编辑列表
+     */
+    renderMilestones() {
+        const container = document.getElementById('milestonesList');
+
+        if (this.currentMilestones.length === 0) {
+            container.innerHTML = '<div class="empty-state compact"><p>暂无里程碑</p></div>';
+            return;
+        }
+
+        container.innerHTML = this.currentMilestones.map((milestone, index) => `
+            <div class="milestone-edit-item">
+                <input type="text"
+                       value="${this.escapeHtml(milestone.title)}"
+                       placeholder="里程碑名称"
+                       onchange="app.updateMilestone(${index}, 'title', this.value)"
+                       class="milestone-title-input">
+                <input type="date"
+                       value="${milestone.expectedDate}"
+                       onchange="app.updateMilestone(${index}, 'expectedDate', this.value)"
+                       class="milestone-date-input">
+                <select class="milestone-status-select"
+                        onchange="app.updateMilestone(${index}, 'status', this.value)">
+                    <option value="pending" ${milestone.status === 'pending' ? 'selected' : ''}>待完成</option>
+                    <option value="in_progress" ${milestone.status === 'in_progress' ? 'selected' : ''}>进行中</option>
+                    <option value="completed" ${milestone.status === 'completed' ? 'selected' : ''}>已完成</option>
+                </select>
+                <label class="milestone-checkbox-label">
+                    <input type="checkbox"
+                           ${milestone.addToNextWeek ? 'checked' : ''}
+                           onchange="app.updateMilestone(${index}, 'addToNextWeek', this.checked)">
+                    <span>加入下周计划</span>
+                </label>
+                <button class="milestone-delete-btn" onclick="app.removeMilestone(${index})" title="删除">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    /**
      * 保存事项
      */
     saveItem() {
+        const projectName = document.getElementById('itemProjectName').value.trim();
         const title = document.getElementById('itemTitle').value.trim();
         const content = document.getElementById('itemContent').value.trim();
+        const reflection = document.getElementById('itemReflection').value.trim();
         const category = document.getElementById('itemCategory').value;
         const priority = document.getElementById('itemPriority').value;
         const progress = parseInt(document.getElementById('itemProgress').value);
@@ -323,8 +473,10 @@ class WeeklyReportApp {
         }
 
         const itemData = {
+            projectName,
             title,
             content,
+            reflection,
             category,
             priority,
             tags: [...this.currentTags],
@@ -332,7 +484,8 @@ class WeeklyReportApp {
             progress,
             startDate: startDate || null,
             endDate: endDate || null,
-            ddl: ddl || null
+            ddl: ddl || null,
+            milestones: this.currentMilestones.filter(m => m.title.trim())
         };
 
         if (this.editingItem) {
@@ -361,8 +514,14 @@ class WeeklyReportApp {
     /**
      * 编辑事项
      */
-    editItem(type, item) {
-        this.openModal(type, item);
+    editItem(type, itemId) {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const items = type === 'task' ? weekData.tasks : weekData.harvests;
+        const item = items.find(i => i.id === itemId);
+
+        if (item) {
+            this.openModal(type, item);
+        }
     }
 
     /**
@@ -524,6 +683,7 @@ class WeeklyReportApp {
     render() {
         this.renderWeekDisplay();
         this.renderHeroMetrics();
+        this.renderTimeline();
         this.renderTasks();
         this.renderHarvests();
         this.renderNotes();
@@ -555,9 +715,262 @@ class WeeklyReportApp {
             return progress < 100;
         });
 
+        // 获取下周里程碑数量
+        const nextWeekMilestones = this.getNextWeekMilestones();
+
+        // 下周计划总数 = 手动添加的计划 + 未完成工作 + 下周里程碑
+        const totalPlans = weekData.harvests.length + incompleteTasks.length + nextWeekMilestones.length;
+
         document.getElementById('heroTasksCount').textContent = weekData.tasks.length;
-        document.getElementById('heroPlansCount').textContent = weekData.harvests.length + incompleteTasks.length;
+        document.getElementById('heroPlansCount').textContent = totalPlans;
         document.getElementById('heroNotesCount').textContent = notes.length;
+    }
+
+    /**
+     * 渲染时间线
+     */
+    renderTimeline() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const container = document.getElementById('timelineList');
+        const countEl = document.getElementById('milestonesCount');
+
+        // 收集所有里程碑并附带任务信息（显示所有里程碑，不按周过滤）
+        const allMilestones = [];
+        weekData.tasks.forEach(task => {
+            if (task.milestones && task.milestones.length > 0) {
+                task.milestones.forEach(m => {
+                    allMilestones.push({
+                        ...m,
+                        taskTitle: task.title,
+                        taskProjectName: task.projectName || '',
+                        taskId: task.id,
+                        taskColor: task.color
+                    });
+                });
+            }
+        });
+
+        countEl.textContent = allMilestones.length;
+
+        if (allMilestones.length === 0) {
+            container.innerHTML = `
+                <div class="timeline-empty">
+                    <p>暂无里程碑节点，编辑工作项时可添加里程碑</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 按日期排序
+        allMilestones.sort((a, b) => new Date(a.expectedDate) - new Date(b.expectedDate));
+
+        // 获取日期范围
+        const dates = allMilestones.map(m => new Date(m.expectedDate).getTime());
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+
+        // 扩展范围
+        minDate.setHours(0, 0, 0, 0);
+        maxDate.setHours(23, 59, 59, 999);
+
+        const totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+
+        // 计算节点位置
+        const minTime = minDate.getTime();
+        const timeRange = totalDays * 24 * 60 * 60 * 1000;
+
+        // 按项目名称分组并分配颜色（暗色系，通过明度对比）
+        const projectColors = {};
+        const colorPalette = [
+            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
+            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
+            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
+            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
+            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
+            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
+        ];
+
+        let colorIndex = 0;
+        const getProjectKey = (projectName) => projectName || '__no_project__';
+
+        allMilestones.forEach(m => {
+            const projectKey = getProjectKey(m.taskProjectName);
+            if (!projectColors[projectKey]) {
+                projectColors[projectKey] = colorPalette[colorIndex % colorPalette.length];
+                colorIndex++;
+            }
+        });
+
+        // 计算垂直层级（卡片高度错开）
+        const CARD_OFFSETS = [0, 60, 120, 180, 240]; // 卡片向上偏移量
+
+        const milestonePositions = allMilestones.map((milestone, index) => {
+            const milestoneTime = new Date(milestone.expectedDate).getTime();
+            const position = ((milestoneTime - minTime) / timeRange) * 100;
+            const leftPercent = Math.max(2, Math.min(98, position));
+            return {
+                index,
+                leftPercent,
+                milestone,
+                level: 0,
+                cardOffset: 0
+            };
+        });
+
+        // 检测并处理重叠
+        for (let i = 0; i < milestonePositions.length; i++) {
+            const current = milestonePositions[i];
+            const conflicts = [];
+
+            for (let j = 0; j < i; j++) {
+                const prev = milestonePositions[j];
+                const distance = Math.abs(current.leftPercent - prev.leftPercent);
+
+                if (distance < 12) {
+                    conflicts.push(prev.cardOffset);
+                }
+            }
+
+            for (let offset of CARD_OFFSETS) {
+                if (!conflicts.includes(offset)) {
+                    current.cardOffset = offset;
+                    current.level = CARD_OFFSETS.indexOf(offset);
+                    break;
+                }
+            }
+        }
+
+        // 生成日期刻度
+        const dateMarks = [];
+        const step = totalDays <= 3 ? 1 : Math.ceil(totalDays / 4);
+        for (let i = 0; i < totalDays; i += step) {
+            const date = new Date(minDate);
+            date.setDate(date.getDate() + i);
+            const position = totalDays === 1 ? 50 : (i / (totalDays - 1)) * 100;
+            dateMarks.push({
+                label: `${date.getMonth() + 1}/${date.getDate()}`,
+                position: position
+            });
+        }
+
+        // 计算容器高度
+        const maxOffset = Math.max(...milestonePositions.map(p => p.cardOffset));
+        const containerHeight = 160 + maxOffset;
+
+        // 渲染时间轴
+        container.innerHTML = `
+            <div class="timeline-horizontal">
+                <div class="timeline-axis-area">
+                    <div class="timeline-nodes" style="height: ${containerHeight}px;">
+                        ${milestonePositions.map(pos => {
+                            const milestone = pos.milestone;
+                            const status = this.getMilestoneStatus(milestone);
+                            const projectKey = getProjectKey(milestone.taskProjectName);
+                            const projectColor = projectColors[projectKey];
+                            const connectorHeight = 20 + pos.cardOffset;
+
+                            return `
+                                <div class="timeline-node ${status}"
+                                     style="left: ${pos.leftPercent}%; --task-color: ${projectColor.primary}; --task-bg: ${projectColor.secondary}; --connector-height: ${connectorHeight}px;"
+                                     onclick="app.editItem('task', ${milestone.taskId})"
+                                     title="${this.escapeHtml(milestone.taskProjectName || milestone.taskTitle)} - ${this.escapeHtml(milestone.title)}">
+                                    <div class="timeline-node-card">
+                                        ${milestone.taskProjectName ? `<div class="timeline-node-project">${this.escapeHtml(milestone.taskProjectName)}</div>` : ''}
+                                        <div class="timeline-node-title">${this.escapeHtml(milestone.title)}</div>
+                                        <div class="timeline-node-date">${this.formatDate(milestone.expectedDate)}</div>
+                                    </div>
+                                    <div class="timeline-node-connector"></div>
+                                    <div class="timeline-node-dot"></div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="timeline-axis"></div>
+                </div>
+                <div class="timeline-dates">
+                    ${dateMarks.map(mark => `
+                        <span class="timeline-date-mark" style="left: ${mark.position}%;">${mark.label}</span>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 获取状态标签文本
+     */
+    getStatusLabel(status) {
+        const labels = {
+            completed: '已完成',
+            in_progress: '进行中',
+            pending: '待完成',
+            overdue: '已逾期'
+        };
+        return labels[status] || '待完成';
+    }
+
+    /**
+     * 获取里程碑状态
+     */
+    getMilestoneStatus(milestone) {
+        if (milestone.status === 'completed') {
+            return 'completed'; // 绿色
+        }
+
+        if (milestone.status === 'in_progress') {
+            return 'in_progress'; // 黄色
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expectedDate = new Date(milestone.expectedDate);
+        expectedDate.setHours(0, 0, 0, 0);
+
+        if (expectedDate < today) {
+            return 'overdue'; // 红色（逾期）
+        }
+
+        return 'pending'; // 灰色（待完成）
+    }
+
+    /**
+     * 获取勾选了"加入下周计划"的里程碑
+     */
+    getNextWeekMilestones() {
+        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+
+        // 收集勾选了"加入下周计划"的里程碑
+        const nextWeekMilestones = [];
+        weekData.tasks.forEach(task => {
+            if (task.milestones && task.milestones.length > 0) {
+                task.milestones.forEach(m => {
+                    // 只处理勾选了"加入下周计划"的里程碑
+                    if (m.addToNextWeek) {
+                        nextWeekMilestones.push({
+                            id: m.id,
+                            title: `[里程碑] ${m.title}`,
+                            projectName: task.projectName || '',
+                            content: `来自: ${task.title}`,
+                            color: task.color,
+                            progress: m.status === 'completed' ? 100 : 0,
+                            startDate: m.expectedDate,
+                            endDate: null,
+                            ddl: m.expectedDate,
+                            milestones: [],
+                            isFromMilestone: true,
+                            sourceTaskId: task.id,
+                            sourceTaskTitle: task.title,
+                            category: task.category || 'ai',
+                            priority: task.priority || 'p1',
+                            tags: [],
+                            milestoneStatus: m.status
+                        });
+                    }
+                });
+            }
+        });
+
+        return nextWeekMilestones;
     }
 
     /**
@@ -593,7 +1006,45 @@ class WeeklyReportApp {
             return;
         }
 
-        container.innerHTML = sortedTasks.map(task => this.renderItemCard(task, 'task')).join('');
+        // 按项目分组
+        const projectGroups = {};
+        const projectColors = {};
+        const colorPalette = [
+            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
+            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
+            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
+            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
+            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
+            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
+        ];
+
+        sortedTasks.forEach(task => {
+            const projectKey = task.projectName || '__no_project__';
+            if (!projectGroups[projectKey]) {
+                projectGroups[projectKey] = {
+                    name: task.projectName || '未分类',
+                    tasks: [],
+                    color: colorPalette[Object.keys(projectGroups).length % colorPalette.length]
+                };
+            }
+            projectGroups[projectKey].tasks.push(task);
+        });
+
+        // 渲染项目分组
+        container.innerHTML = Object.entries(projectGroups).map(([key, group]) => `
+            <div class="project-group" style="--project-color: ${group.color.primary}; --project-bg: ${group.color.secondary};">
+                <div class="project-header">
+                    <div class="project-indicator">
+                        <div class="project-dot"></div>
+                        <h3 class="project-title">${this.escapeHtml(group.name)}</h3>
+                    </div>
+                    <span class="project-count">${group.tasks.length} 项工作</span>
+                </div>
+                <div class="project-tasks">
+                    ${group.tasks.map(task => this.renderItemCard(task, 'task', group.color)).join('')}
+                </div>
+            </div>
+        `).join('');
     }
 
     /**
@@ -610,12 +1061,19 @@ class WeeklyReportApp {
             return progress < 100;
         });
 
-        // 合并手动添加的下周计划和未完成工作
-        const allPlans = [...weekData.harvests, ...incompleteTasks.map(task => ({
-            ...task,
-            isFromIncomplete: true,
-            title: `[未完成] ${task.title}`
-        }))];
+        // 获取下周日期范围的里程碑
+        const nextWeekMilestones = this.getNextWeekMilestones();
+
+        // 合并手动添加的下周计划、未完成工作、下周里程碑
+        const allPlans = [
+            ...weekData.harvests,
+            ...incompleteTasks.map(task => ({
+                ...task,
+                isFromIncomplete: true,
+                title: `[未完成] ${task.title}`
+            })),
+            ...nextWeekMilestones
+        ];
 
         countEl.textContent = allPlans.length;
 
@@ -635,13 +1093,50 @@ class WeeklyReportApp {
             return;
         }
 
-        container.innerHTML = allPlans.map(plan => this.renderItemCard(plan, 'harvest')).join('');
+        // 按项目分组（和本周工作使用相同的颜色系统）
+        const projectGroups = {};
+        const colorPalette = [
+            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
+            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
+            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
+            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
+            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
+            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
+        ];
+
+        allPlans.forEach(plan => {
+            const projectKey = plan.projectName || '__no_project__';
+            if (!projectGroups[projectKey]) {
+                projectGroups[projectKey] = {
+                    name: plan.projectName || '未分类',
+                    plans: [],
+                    color: colorPalette[Object.keys(projectGroups).length % colorPalette.length]
+                };
+            }
+            projectGroups[projectKey].plans.push(plan);
+        });
+
+        // 渲染项目分组
+        container.innerHTML = Object.entries(projectGroups).map(([key, group]) => `
+            <div class="project-group" style="--project-color: ${group.color.primary}; --project-bg: ${group.color.secondary};">
+                <div class="project-header">
+                    <div class="project-indicator">
+                        <div class="project-dot"></div>
+                        <h3 class="project-title">${this.escapeHtml(group.name)}</h3>
+                    </div>
+                    <span class="project-count">${group.plans.length} 项计划</span>
+                </div>
+                <div class="project-tasks">
+                    ${group.plans.map(plan => this.renderItemCard(plan, 'harvest', group.color)).join('')}
+                </div>
+            </div>
+        `).join('');
     }
 
     /**
      * 渲染事项卡片
      */
-    renderItemCard(item, type) {
+    renderItemCard(item, type, projectColor = null) {
         const categoryLabels = {
             ai: 'AI',
             c_product: 'C端产品'
@@ -654,57 +1149,65 @@ class WeeklyReportApp {
             p3: 'P3'
         };
 
-        const tagsHtml = item.tags && item.tags.length > 0
-            ? `<div class="item-tags">${item.tags.map(tag => `<span class="item-tag">${this.escapeHtml(tag)}</span>`).join('')}</div>`
-            : '';
+        // 使用项目颜色或自定义颜色
+        const color = projectColor ? projectColor.primary : item.color;
 
-        // 始终显示进度条（独立成行）
-        const progressValue = item.progress !== undefined ? item.progress : 100;
-        const progressHtml = `
-            <div class="item-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width: ${progressValue}%"></div></div>
-                <span class="progress-text">${progressValue}%</span>
-            </div>
-        `;
-
+        // 日期和DDL
         const dateHtml = item.endDate
-            ? `<span class="item-date"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h12M4 1v3M10 1v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${this.formatDate(item.endDate)}</span>`
+            ? `<span class="item-date">${this.formatDate(item.endDate)}</span>`
             : '';
 
-        // DDL 显示
         const ddlHtml = item.ddl
-            ? `<span class="item-ddl"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>DDL: ${this.formatDate(item.ddl)}</span>`
+            ? `<span class="item-ddl">DDL: ${this.formatDate(item.ddl)}</span>`
             : '';
+
+        // 进度
+        const progressValue = item.progress !== undefined ? item.progress : 100;
+
+        // 如果是里程碑项，点击编辑源任务
+        const editAction = item.isFromMilestone && item.sourceTaskId
+            ? `onclick="app.editItem('task', ${item.sourceTaskId})"`
+            : `onclick="app.editItem('${type}', ${item.id})"`;
+
+        // 如果是里程碑项，不显示删除按钮（因为它是自动生成的）
+        const deleteBtn = item.isFromMilestone
+            ? ''
+            : `<button class="item-action-btn delete" onclick="app.deleteItem('${type}', ${item.id})" title="删除">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+               </button>`;
 
         return `
-            <div class="item-card" data-id="${item.id}">
+            <div class="item-card" data-id="${item.id}" style="--item-color: ${color};">
+                <div class="item-color-stripe" style="background: ${color};"></div>
                 <div class="item-header">
-                    <div class="item-title-wrapper">
-                        <div class="item-color-dot" style="background: ${item.color}"></div>
+                    <div class="item-title-line">
                         <span class="item-title">${this.escapeHtml(item.title)}</span>
+                        <span class="item-tag-item ${item.category}">${categoryLabels[item.category] || 'AI'}</span>
+                        <span class="item-tag-item priority ${item.priority}">${priorityLabels[item.priority] || 'P1'}</span>
                     </div>
                     <div class="item-actions">
-                        <button class="item-action-btn" onclick="app.editItem('${type}', ${JSON.stringify(item).replace(/'/g, "\\'")})" title="编辑">
+                        <button class="item-action-btn" ${editAction} title="编辑">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <path d="M11.5 2.5l2 2M2 12v2h2l7.5-7.5-2-2L2 12z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </button>
-                        <button class="item-action-btn delete" onclick="app.deleteItem('${type}', ${item.id})" title="删除">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                        ${deleteBtn}
                     </div>
                 </div>
                 ${item.content ? `<div class="item-content">${this.escapeHtml(item.content)}</div>` : ''}
-                <div class="item-meta">
-                    <span class="item-category ${item.category}">${categoryLabels[item.category] || 'AI'}</span>
-                    <span class="item-priority ${item.priority}">${priorityLabels[item.priority] || 'P1'}</span>
-                    ${tagsHtml}
-                    ${dateHtml}
-                    ${ddlHtml}
+                ${item.reflection ? `<div class="item-reflection">💡 ${this.escapeHtml(item.reflection)}</div>` : ''}
+                <div class="item-footer">
+                    <div class="item-dates">
+                        ${dateHtml}
+                        ${ddlHtml}
+                    </div>
+                    <div class="item-progress-mini">
+                        <div class="progress-bar-mini"><div class="progress-fill-mini" style="width: ${progressValue}%"></div></div>
+                        <span>${progressValue}%</span>
+                    </div>
                 </div>
-                ${progressHtml}
             </div>
         `;
     }
@@ -780,14 +1283,36 @@ class WeeklyReportApp {
     }
 
     /**
+     * 显示心得输入框
+     */
+    showThoughtsInput() {
+        const inputArea = document.getElementById('thoughtsInputArea');
+        inputArea.style.display = 'block';
+        document.getElementById('weekThoughts').focus();
+    }
+
+    /**
+     * 隐藏心得输入框
+     */
+    hideThoughtsInput() {
+        const inputArea = document.getElementById('thoughtsInputArea');
+        inputArea.style.display = 'none';
+    }
+
+    /**
      * 渲染心得体会
      */
     renderThoughts() {
         const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
         const container = document.getElementById('thoughtsList');
+        const textarea = document.getElementById('weekThoughts');
+
+        // 加载本周心得
+        const weekThoughts = storage.getThoughts(this.currentYear, this.currentWeek);
+        textarea.value = weekThoughts;
 
         // 从任务中提取包含"心得"、"体会"、"感悟"等关键词的内容
-        const thoughts = [];
+        const taskThoughts = [];
         weekData.tasks.forEach(task => {
             if (task.content && (
                 task.content.includes('心得') ||
@@ -796,24 +1321,28 @@ class WeeklyReportApp {
                 task.content.includes('总结') ||
                 task.content.includes('经验')
             )) {
-                thoughts.push({
+                taskThoughts.push({
                     title: task.title,
-                    content: task.content
+                    content: task.content,
+                    projectName: task.projectName || ''
                 });
             }
         });
 
-        // 也从收获中提取
+        // 也从收获中提取（排除里程碑类型的计划）
         weekData.harvests.forEach(harvest => {
-            if (harvest.content) {
-                thoughts.push({
+            // 排除里程碑项（isFromMilestone）和未完成任务项（isFromIncomplete）
+            if (harvest.content && !harvest.isFromMilestone && !harvest.isFromIncomplete) {
+                taskThoughts.push({
                     title: harvest.title,
-                    content: harvest.content
+                    content: harvest.content,
+                    projectName: harvest.projectName || ''
                 });
             }
         });
 
-        if (thoughts.length === 0) {
+        // 如果没有本周心得和任务心得
+        if (!weekThoughts && taskThoughts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state compact">
                     <p>暂无心得体会</p>
@@ -822,12 +1351,70 @@ class WeeklyReportApp {
             return;
         }
 
-        container.innerHTML = thoughts.map(thought => `
-            <div class="thought-item">
-                <strong>${this.escapeHtml(thought.title)}</strong>
-                ${thought.content ? `<br>${this.escapeHtml(thought.content)}` : ''}
-            </div>
-        `).join('');
+        // 构建心得列表HTML
+        let thoughtsHtml = '';
+
+        // 显示本周心得（如果有）
+        if (weekThoughts) {
+            thoughtsHtml += `
+                <div class="thought-item week-thought">
+                    <div class="thought-item-header">
+                        <div class="thought-badge">本周心得</div>
+                        <button class="thought-delete-btn" onclick="app.deleteThoughts()" title="删除">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="thought-content">${this.escapeHtml(weekThoughts)}</div>
+                </div>
+            `;
+        }
+
+        // 显示从任务提取的心得（如果有）
+        if (taskThoughts.length > 0) {
+            thoughtsHtml += taskThoughts.map(thought => `
+                <div class="thought-item task-thought">
+                    <div class="thought-header">
+                        ${thought.projectName ? `<span class="thought-project">${this.escapeHtml(thought.projectName)}</span>` : ''}
+                        <strong class="thought-title">${this.escapeHtml(thought.title)}</strong>
+                    </div>
+                    <div class="thought-content">${this.escapeHtml(thought.content)}</div>
+                </div>
+            `).join('');
+        }
+
+        container.innerHTML = thoughtsHtml;
+    }
+
+    /**
+     * 保存本周心得
+     */
+    saveThoughts() {
+        const textarea = document.getElementById('weekThoughts');
+        const thoughts = textarea.value.trim();
+
+        if (!thoughts) {
+            this.showToast('请输入心得体会', 'error');
+            textarea.focus();
+            return;
+        }
+
+        storage.saveThoughts(this.currentYear, this.currentWeek, thoughts);
+        this.showToast('心得已保存');
+        this.hideThoughtsInput();
+        this.renderThoughts();
+    }
+
+    /**
+     * 删除本周心得
+     */
+    deleteThoughts() {
+        if (confirm('确定要删除本周心得吗？')) {
+            storage.saveThoughts(this.currentYear, this.currentWeek, '');
+            this.showToast('心得已删除');
+            this.renderThoughts();
+        }
     }
 
     /**
