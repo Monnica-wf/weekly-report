@@ -1,8 +1,164 @@
 {
   "version": 1,
-  "exportedAt": "",
-  "publishedAt": "",
-  "reports": {},
+  "exportedAt": "2026-06-26T10:12:38.985Z",
+  "reports": {
+    "2026-W26": {
+      "tasks": [
+        {
+          "id": 1782389186139.4077,
+          "title": "PRD撰写和评审",
+          "projectName": "企业级香港安全能力接入",
+          "content": "下周细评",
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": "2026-06-22",
+          "endDate": null,
+          "ddl": null,
+          "milestones": [
+            {
+              "id": 1782395369157.0952,
+              "title": "细评",
+              "expectedDate": "2026-07-03",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
+          "createdAt": "2026-06-25T12:06:26.139Z",
+          "updatedAt": "2026-06-26T09:37:17.102Z",
+          "reflection": ""
+        },
+        {
+          "id": 1782466291922.5103,
+          "title": "配置类转常规类需求",
+          "projectName": "企业级英文接入",
+          "content": "周四拉齐会议，转常规类，下周需要完成PRD且进行评审",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": "2026-06-22",
+          "endDate": "2026-06-26",
+          "ddl": null,
+          "milestones": [
+            {
+              "id": 1782466258121.449,
+              "title": "组内评审",
+              "expectedDate": "2026-07-01",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
+          "createdAt": "2026-06-26T09:31:31.922Z",
+          "updatedAt": "2026-06-26T09:36:15.719Z"
+        },
+        {
+          "id": 1782466703551.872,
+          "title": "关怀宝开城配置类需求",
+          "projectName": "关怀宝开城14城",
+          "content": "跟进中",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": "2026-06-22",
+          "endDate": "2026-06-25",
+          "ddl": null,
+          "milestones": [
+            {
+              "id": 1782466690119.5361,
+              "title": "继续跟进",
+              "expectedDate": "2026-07-10",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
+          "createdAt": "2026-06-26T09:38:23.551Z",
+          "updatedAt": "2026-06-26T09:49:39.928Z"
+        },
+        {
+          "id": 1782466815920.8577,
+          "title": "安全工具竞品分析调研",
+          "projectName": "安全工具竞品分析调研",
+          "content": "基本完成乘客侧调研，感觉深度不够，还有待进一步加强分析",
+          "reflection": "基本了解熟悉了C端工具，有助于后续工作开展！",
+          "category": "c_product",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 61,
+          "startDate": "2026-06-23",
+          "endDate": "2026-06-26",
+          "ddl": "2026-07-02",
+          "milestones": [
+            {
+              "id": 1782466801254.9712,
+              "title": "完成司机侧调研",
+              "expectedDate": "2026-06-30",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
+          "createdAt": "2026-06-26T09:40:15.920Z",
+          "updatedAt": "2026-06-26T09:40:15.920Z"
+        }
+      ],
+      "harvests": [],
+      "notes": [],
+      "thoughts": "本周主要熟悉产品需求跟进流程，了解了基本链路。同时，初步学习了 C 端安全工具的主要类型以及相对竞品的优势劣势。后续会继续推进需求，持续跟进学习，提升对安全业务和产品流程的理解。"
+    },
+    "2026-W27": {
+      "tasks": [],
+      "harvests": [
+        {
+          "id": 1782395196632.3232,
+          "title": "细评",
+          "projectName": "企业级香港安全能力接入",
+          "content": "来自本周工作: PRD撰写和评审",
+          "color": "#0A84FF",
+          "progress": 0,
+          "startDate": "2026-07-03",
+          "endDate": null,
+          "ddl": "2026-07-03",
+          "milestones": [],
+          "fromMilestone": true,
+          "sourceTaskId": 1782389186139.4077,
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "createdAt": "2026-06-25T13:46:36.632Z",
+          "updatedAt": "2026-06-25T13:46:36.632Z"
+        },
+        {
+          "id": 1782466291924.253,
+          "title": "组内评审",
+          "projectName": "企业级英文接入",
+          "content": "来自本周工作: 配置类转常规类需求",
+          "color": "#0A84FF",
+          "progress": 0,
+          "startDate": "2026-06-26",
+          "endDate": null,
+          "ddl": "2026-06-26",
+          "milestones": [],
+          "fromMilestone": true,
+          "sourceTaskTitle": "配置类转常规类需求",
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "createdAt": "2026-06-26T09:31:31.924Z",
+          "updatedAt": "2026-06-26T09:31:31.924Z"
+        }
+      ],
+      "notes": []
+    }
+  },
   "notes": {},
-  "comments": {}
+  "comments": {},
+  "publishedAt": "2026-06-26T10:12:38.985Z"
 }
