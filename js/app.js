@@ -24,6 +24,8 @@ class WeeklyReportApp {
         if (!importedFromShare) {
             await this.loadPublishedData();
         }
+        this.syncAllMilestonesToNextWeekTasks();
+        this.cleanupAutoPlanThoughts();
         this.bindEvents();
         this.render();
         this.setDefaultDates();
@@ -538,8 +540,184 @@ class WeeklyReportApp {
             this.showToast('添加成功');
         }
 
+        if (this.editingType === 'task') {
+            this.syncMilestonesToNextWeekTasks(this.currentYear, this.currentWeek);
+        }
+
         this.closeModal();
         this.render();
+    }
+
+    /**
+     * 获取相邻周，沿用当前应用的 52 周滚动逻辑
+     */
+    getAdjacentWeek(year, week, delta = 1) {
+        let targetYear = year;
+        let targetWeek = week + delta;
+
+        while (targetWeek > 52) {
+            targetWeek -= 52;
+            targetYear++;
+        }
+
+        while (targetWeek < 1) {
+            targetWeek += 52;
+            targetYear--;
+        }
+
+        return { year: targetYear, week: targetWeek };
+    }
+
+    /**
+     * 获取当前应用口径下的周起止日期
+     */
+    getWeekBoundaryDates(year, week) {
+        const firstDayOfYear = new Date(year, 0, 1);
+        const start = new Date(firstDayOfYear);
+        start.setDate(firstDayOfYear.getDate() + (week - 1) * 7);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+
+        return { start, end };
+    }
+
+    colorWithAlpha(color, alpha = 0.08) {
+        if (!color || typeof color !== 'string' || !color.startsWith('#')) {
+            return 'rgba(92, 184, 168, 0.08)';
+        }
+
+        const hex = color.replace('#', '');
+        if (hex.length !== 6) {
+            return `${color}14`;
+        }
+
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    /**
+     * 将本周勾选“加入下周计划”的里程碑同步为下一周的本周工作
+     */
+    syncMilestonesToNextWeekTasks(year, week) {
+        const sourceWeekData = storage.getWeekData(year, week);
+        const next = this.getAdjacentWeek(year, week, 1);
+        const nextWeekData = storage.getWeekData(next.year, next.week);
+
+        const generatedTasks = [];
+
+        sourceWeekData.tasks.forEach(task => {
+            (task.milestones || []).forEach(milestone => {
+                if (!milestone.addToNextWeek || !milestone.title?.trim()) return;
+
+                const syncKey = `${storage.getWeekId(year, week)}:${task.id}:${milestone.id}`;
+                generatedTasks.push({
+                    id: `milestone-${syncKey}`,
+                    title: milestone.title,
+                    projectName: task.projectName || '',
+                    content: `来自本周工作：${task.title}`,
+                    reflection: '',
+                    category: task.category || 'ai',
+                    priority: task.priority || 'p1',
+                    tags: [...(task.tags || [])],
+                    color: task.color || '#0A84FF',
+                    progress: milestone.status === 'completed' ? 100 : 0,
+                    startDate: milestone.expectedDate || null,
+                    endDate: null,
+                    ddl: milestone.expectedDate || null,
+                    milestones: [],
+                    fromMilestone: true,
+                    isFromMilestone: false,
+                    isSyncedMilestoneTask: true,
+                    sourceWeekId: storage.getWeekId(year, week),
+                    sourceTaskId: task.id,
+                    sourceTaskTitle: task.title,
+                    sourceMilestoneId: milestone.id,
+                    syncKey,
+                    milestoneStatus: milestone.status,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+            });
+        });
+
+        const sourceWeekId = storage.getWeekId(year, week);
+        const existingManualTasks = (nextWeekData.tasks || []).filter(task => {
+            if (!task.fromMilestone && !task.isFromMilestone && !task.isSyncedMilestoneTask) return true;
+            return task.sourceWeekId !== sourceWeekId;
+        });
+
+        const existingGeneratedByKey = {};
+        (nextWeekData.tasks || []).forEach(task => {
+            if ((task.fromMilestone || task.isFromMilestone) && task.syncKey) {
+                existingGeneratedByKey[task.syncKey] = task;
+            }
+        });
+
+        nextWeekData.tasks = [
+            ...existingManualTasks,
+            ...generatedTasks.map(task => ({
+                ...task,
+                createdAt: existingGeneratedByKey[task.syncKey]?.createdAt || task.createdAt
+            }))
+        ];
+
+        // 清理旧版本误同步到“下周计划”的里程碑项
+        nextWeekData.harvests = (nextWeekData.harvests || []).filter(plan => {
+            if (!plan.fromMilestone && !plan.isFromMilestone) return true;
+            if (plan.sourceWeekId && plan.sourceWeekId !== storage.getWeekId(year, week)) return true;
+            return false;
+        });
+
+        storage.saveWeekData(next.year, next.week, nextWeekData);
+    }
+
+    /**
+     * 载入时修复旧数据：把历史里程碑计划同步到下一周工作
+     */
+    syncAllMilestonesToNextWeekTasks() {
+        const allData = storage.getAllData();
+        Object.keys(allData).forEach(weekId => {
+            const match = weekId.match(/^(\d{4})-W(\d{2})$/);
+            if (!match) return;
+
+            const year = Number(match[1]);
+            const week = Number(match[2]);
+            const weekData = allData[weekId];
+            const hasMilestoneSync = (weekData.tasks || []).some(task =>
+                (task.milestones || []).some(milestone => milestone.addToNextWeek)
+            );
+
+            if (hasMilestoneSync) {
+                this.syncMilestonesToNextWeekTasks(year, week);
+            }
+        });
+    }
+
+    /**
+     * 清理旧版本误进入心得体会的自动计划文案
+     */
+    cleanupAutoPlanThoughts() {
+        const allData = storage.getAllData();
+        let changed = false;
+
+        Object.entries(allData).forEach(([weekId, weekData]) => {
+            if (typeof weekData.thoughts === 'string' &&
+                /来自本周工作[:：]|来自[:：]/.test(weekData.thoughts)) {
+                weekData.thoughts = '';
+                allData[weekId] = weekData;
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            storage.saveAllData(allData);
+        }
     }
 
     /**
@@ -756,12 +934,10 @@ class WeeklyReportApp {
             const progress = task.progress !== undefined ? task.progress : 100;
             return progress < 100;
         });
+        const nextWeekMilestonePlans = this.getCurrentWeekMilestonePlans();
 
-        // 获取下周里程碑数量
-        const nextWeekMilestones = this.getNextWeekMilestones();
-
-        // 下周计划总数 = 手动添加的计划 + 未完成工作 + 下周里程碑
-        const totalPlans = weekData.harvests.length + incompleteTasks.length + nextWeekMilestones.length;
+        // 下周计划总数 = 手动添加的计划 + 未完成工作 + 本周勾选同步的里程碑计划
+        const totalPlans = weekData.harvests.length + incompleteTasks.length + nextWeekMilestonePlans.length;
 
         document.getElementById('heroTasksCount').textContent = weekData.tasks.length;
         document.getElementById('heroPlansCount').textContent = totalPlans;
@@ -772,26 +948,54 @@ class WeeklyReportApp {
      * 渲染时间线
      */
     renderTimeline() {
-        const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
         const container = document.getElementById('timelineList');
         const countEl = document.getElementById('milestonesCount');
 
-        // 收集所有里程碑并附带任务信息（显示所有里程碑，不按周过滤）
-        const allMilestones = [];
-        weekData.tasks.forEach(task => {
-            if (task.milestones && task.milestones.length > 0) {
-                task.milestones.forEach(m => {
-                    allMilestones.push({
+        // 收集全部周报里的里程碑和由上周同步过来的计划，保持时间线连续
+        const allData = storage.getAllData();
+        const milestoneMap = new Map();
+
+        Object.entries(allData).forEach(([weekId, weekData]) => {
+            (weekData.tasks || []).forEach(task => {
+                (task.milestones || []).forEach(m => {
+                    if (!m.expectedDate) return;
+
+                    const event = {
                         ...m,
                         taskTitle: task.title,
                         taskProjectName: task.projectName || '',
                         taskId: task.id,
-                        taskColor: task.color
-                    });
+                        taskColor: task.color,
+                        weekId
+                    };
+                    const key = `${event.taskProjectName}|${event.title}|${event.expectedDate}|${m.id || ''}`;
+                    milestoneMap.set(key, event);
                 });
-            }
+
+                if (task.isSyncedMilestoneTask && (task.ddl || task.startDate)) {
+                    const expectedDate = task.ddl || task.startDate;
+                    const event = {
+                        id: task.sourceMilestoneId || task.id,
+                        title: task.title,
+                        expectedDate,
+                        status: task.milestoneStatus || (task.progress >= 100 ? 'completed' : 'pending'),
+                        taskTitle: task.sourceTaskTitle || task.title,
+                        taskProjectName: task.projectName || '',
+                        taskId: task.id,
+                        taskColor: task.color,
+                        sourceWeekId: task.sourceWeekId,
+                        weekId,
+                        isSyncedMilestoneTask: true
+                    };
+                    const key = `${event.taskProjectName}|${event.title}|${event.expectedDate}|${event.id || ''}`;
+                    if (!milestoneMap.has(key)) {
+                        milestoneMap.set(key, event);
+                    }
+                }
+            });
         });
 
+        const allMilestones = Array.from(milestoneMap.values());
         countEl.textContent = allMilestones.length;
 
         if (allMilestones.length === 0) {
@@ -808,8 +1012,9 @@ class WeeklyReportApp {
 
         // 获取日期范围
         const dates = allMilestones.map(m => new Date(m.expectedDate).getTime());
-        const minDate = new Date(Math.min(...dates));
-        const maxDate = new Date(Math.max(...dates));
+        const currentWeekDates = this.getWeekBoundaryDates(this.currentYear, this.currentWeek);
+        const minDate = new Date(Math.min(...dates, currentWeekDates.start.getTime()));
+        const maxDate = new Date(Math.max(...dates, currentWeekDates.end.getTime()));
 
         // 扩展范围
         minDate.setHours(0, 0, 0, 0);
@@ -820,9 +1025,10 @@ class WeeklyReportApp {
         // 计算节点位置
         const minTime = minDate.getTime();
         const timeRange = totalDays * 24 * 60 * 60 * 1000;
+        const timelineWidth = Math.max(960, totalDays * 118);
+        const currentWeekStartPosition = Math.max(0, Math.min(100, ((currentWeekDates.start.getTime() - minTime) / timeRange) * 100));
 
-        // 按项目名称分组并分配颜色（暗色系，通过明度对比）
-        const projectColors = {};
+        // 节点颜色优先使用对应任务自己的颜色，避免同项目节点被统一成一个颜色
         const colorPalette = [
             { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
             { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
@@ -832,19 +1038,16 @@ class WeeklyReportApp {
             { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
         ];
 
-        let colorIndex = 0;
-        const getProjectKey = (projectName) => projectName || '__no_project__';
-
-        allMilestones.forEach(m => {
-            const projectKey = getProjectKey(m.taskProjectName);
-            if (!projectColors[projectKey]) {
-                projectColors[projectKey] = colorPalette[colorIndex % colorPalette.length];
-                colorIndex++;
+        const getMilestoneColor = (milestone, index) => {
+            if (milestone.taskColor) {
+                return {
+                    primary: milestone.taskColor,
+                    secondary: this.colorWithAlpha(milestone.taskColor, 0.1)
+                };
             }
-        });
 
-        // 计算垂直层级（卡片高度错开）
-        const CARD_OFFSETS = [0, 60, 120, 180, 240]; // 卡片向上偏移量
+            return colorPalette[index % colorPalette.length];
+        };
 
         const milestonePositions = allMilestones.map((milestone, index) => {
             const milestoneTime = new Date(milestone.expectedDate).getTime();
@@ -859,28 +1062,38 @@ class WeeklyReportApp {
             };
         });
 
-        // 检测并处理重叠
+        // 检测并处理重叠：同一天或相近日期的卡片垂直错层，避免遮挡
+        const LEVEL_GAP = 96;
         for (let i = 0; i < milestonePositions.length; i++) {
             const current = milestonePositions[i];
-            const conflicts = [];
+            const usedLevels = new Set();
 
             for (let j = 0; j < i; j++) {
                 const prev = milestonePositions[j];
                 const distance = Math.abs(current.leftPercent - prev.leftPercent);
 
-                if (distance < 12) {
-                    conflicts.push(prev.cardOffset);
+                if (distance < 16) {
+                    usedLevels.add(prev.level);
                 }
             }
 
-            for (let offset of CARD_OFFSETS) {
-                if (!conflicts.includes(offset)) {
-                    current.cardOffset = offset;
-                    current.level = CARD_OFFSETS.indexOf(offset);
-                    break;
-                }
+            let level = 0;
+            while (usedLevels.has(level)) {
+                level++;
             }
+
+            current.level = level;
+            current.cardOffset = level * LEVEL_GAP;
         }
+
+        // 轻微横向错位，减少同日多卡片在视觉上压在同一条线上
+        milestonePositions.forEach(pos => {
+            if (pos.level > 0) {
+                const direction = pos.level % 2 === 0 ? 1 : -1;
+                const shift = direction * Math.min(5, 2 + pos.level);
+                pos.leftPercent = Math.max(2, Math.min(98, pos.leftPercent + shift));
+            }
+        });
 
         // 生成日期刻度
         const dateMarks = [];
@@ -902,40 +1115,49 @@ class WeeklyReportApp {
         // 渲染时间轴
         container.innerHTML = `
             <div class="timeline-horizontal">
-                <div class="timeline-axis-area">
-                    <div class="timeline-nodes" style="height: ${containerHeight}px;">
-                        ${milestonePositions.map(pos => {
-                            const milestone = pos.milestone;
-                            const status = this.getMilestoneStatus(milestone);
-                            const projectKey = getProjectKey(milestone.taskProjectName);
-                            const projectColor = projectColors[projectKey];
-                            const connectorHeight = 20 + pos.cardOffset;
+                <div class="timeline-scroll-inner" style="width: ${timelineWidth}px;">
+                    <div class="timeline-axis-area">
+                        <div class="timeline-nodes" style="height: ${containerHeight}px;">
+                            ${milestonePositions.map(pos => {
+                                const milestone = pos.milestone;
+                                const status = this.getMilestoneStatus(milestone);
+                                const projectColor = getMilestoneColor(milestone, pos.index);
+                                const connectorHeight = 20 + pos.cardOffset;
+                                const taskIdArg = JSON.stringify(milestone.taskId);
 
-                            return `
-                                <div class="timeline-node ${status}"
-                                     style="left: ${pos.leftPercent}%; --task-color: ${projectColor.primary}; --task-bg: ${projectColor.secondary}; --connector-height: ${connectorHeight}px;"
-                                     onclick="app.editItem('task', ${milestone.taskId})"
-                                     title="${this.escapeHtml(milestone.taskProjectName || milestone.taskTitle)} - ${this.escapeHtml(milestone.title)}">
-                                    <div class="timeline-node-card">
-                                        ${milestone.taskProjectName ? `<div class="timeline-node-project">${this.escapeHtml(milestone.taskProjectName)}</div>` : ''}
-                                        <div class="timeline-node-title">${this.escapeHtml(milestone.title)}</div>
-                                        <div class="timeline-node-date">${this.formatDate(milestone.expectedDate)}</div>
+                                return `
+                                    <div class="timeline-node ${status}"
+                                         style="left: ${pos.leftPercent}%; --task-color: ${projectColor.primary}; --task-bg: ${projectColor.secondary}; --connector-height: ${connectorHeight}px;"
+                                         onclick='app.editItem("task", ${taskIdArg})'
+                                         title="${this.escapeHtml(milestone.taskProjectName || milestone.taskTitle)} - ${this.escapeHtml(milestone.title)}">
+                                        <div class="timeline-node-card">
+                                            ${milestone.taskProjectName ? `<div class="timeline-node-project">${this.escapeHtml(milestone.taskProjectName)}</div>` : ''}
+                                            <div class="timeline-node-title">${this.escapeHtml(milestone.title)}</div>
+                                            <div class="timeline-node-date">${this.formatDate(milestone.expectedDate)}</div>
+                                        </div>
+                                        <div class="timeline-node-connector"></div>
+                                        <div class="timeline-node-dot"></div>
                                     </div>
-                                    <div class="timeline-node-connector"></div>
-                                    <div class="timeline-node-dot"></div>
-                                </div>
-                            `;
-                        }).join('')}
+                                `;
+                            }).join('')}
+                        </div>
+                        <div class="timeline-axis"></div>
                     </div>
-                    <div class="timeline-axis"></div>
-                </div>
-                <div class="timeline-dates">
-                    ${dateMarks.map(mark => `
-                        <span class="timeline-date-mark" style="left: ${mark.position}%;">${mark.label}</span>
-                    `).join('')}
+                    <div class="timeline-dates">
+                        ${dateMarks.map(mark => `
+                            <span class="timeline-date-mark" style="left: ${mark.position}%;">${mark.label}</span>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
         `;
+
+        const scroller = container.querySelector('.timeline-horizontal');
+        if (scroller) {
+            requestAnimationFrame(() => {
+                scroller.scrollLeft = Math.max(0, (timelineWidth * currentWeekStartPosition / 100) - 32);
+            });
+        }
     }
 
     /**
@@ -976,43 +1198,39 @@ class WeeklyReportApp {
     }
 
     /**
-     * 获取勾选了"加入下周计划"的里程碑
+     * 获取当前周勾选“加入下周计划”的里程碑，仅用于本周的下周计划展示
      */
-    getNextWeekMilestones() {
+    getCurrentWeekMilestonePlans() {
         const weekData = storage.getWeekData(this.currentYear, this.currentWeek);
+        const plans = [];
 
-        // 收集勾选了"加入下周计划"的里程碑
-        const nextWeekMilestones = [];
         weekData.tasks.forEach(task => {
-            if (task.milestones && task.milestones.length > 0) {
-                task.milestones.forEach(m => {
-                    // 只处理勾选了"加入下周计划"的里程碑
-                    if (m.addToNextWeek) {
-                        nextWeekMilestones.push({
-                            id: m.id,
-                            title: `[里程碑] ${m.title}`,
-                            projectName: task.projectName || '',
-                            content: `来自: ${task.title}`,
-                            color: task.color,
-                            progress: m.status === 'completed' ? 100 : 0,
-                            startDate: m.expectedDate,
-                            endDate: null,
-                            ddl: m.expectedDate,
-                            milestones: [],
-                            isFromMilestone: true,
-                            sourceTaskId: task.id,
-                            sourceTaskTitle: task.title,
-                            category: task.category || 'ai',
-                            priority: task.priority || 'p1',
-                            tags: [],
-                            milestoneStatus: m.status
-                        });
-                    }
+            (task.milestones || []).forEach(milestone => {
+                if (!milestone.addToNextWeek || !milestone.title?.trim()) return;
+
+                plans.push({
+                    id: `display-milestone-${task.id}-${milestone.id}`,
+                    title: milestone.title,
+                    projectName: task.projectName || '',
+                    content: `来自本周工作：${task.title}`,
+                    color: task.color,
+                    progress: milestone.status === 'completed' ? 100 : 0,
+                    startDate: milestone.expectedDate || null,
+                    endDate: null,
+                    ddl: milestone.expectedDate || null,
+                    milestones: [],
+                    isFromMilestone: true,
+                    sourceTaskId: task.id,
+                    sourceTaskTitle: task.title,
+                    category: task.category || 'ai',
+                    priority: task.priority || 'p1',
+                    tags: [],
+                    milestoneStatus: milestone.status
                 });
-            }
+            });
         });
 
-        return nextWeekMilestones;
+        return plans;
     }
 
     /**
@@ -1102,11 +1320,9 @@ class WeeklyReportApp {
             const progress = task.progress !== undefined ? task.progress : 100;
             return progress < 100;
         });
+        const nextWeekMilestonePlans = this.getCurrentWeekMilestonePlans();
 
-        // 获取下周日期范围的里程碑
-        const nextWeekMilestones = this.getNextWeekMilestones();
-
-        // 合并手动添加的下周计划、未完成工作、下周里程碑
+        // 合并手动添加的下周计划、未完成工作、当前周勾选同步的里程碑计划
         const allPlans = [
             ...weekData.harvests,
             ...incompleteTasks.map(task => ({
@@ -1114,7 +1330,7 @@ class WeeklyReportApp {
                 isFromIncomplete: true,
                 title: `[未完成] ${task.title}`
             })),
-            ...nextWeekMilestones
+            ...nextWeekMilestonePlans
         ];
 
         countEl.textContent = allPlans.length;
@@ -1205,16 +1421,17 @@ class WeeklyReportApp {
 
         // 进度
         const progressValue = item.progress !== undefined ? item.progress : 100;
+        const itemIdArg = JSON.stringify(item.id);
 
-        // 如果是里程碑项，点击编辑源任务
-        const editAction = item.isFromMilestone && item.sourceTaskId
+        // 如果是旧版下周计划里的里程碑项，点击编辑源任务；同步到本周工作后的任务直接编辑自身
+        const editAction = item.isFromMilestone && type !== 'task' && item.sourceTaskId
             ? `onclick="app.editItem('task', ${item.sourceTaskId})"`
-            : `onclick="app.editItem('${type}', ${item.id})"`;
+            : `onclick='app.editItem("${type}", ${itemIdArg})'`;
 
-        // 如果是里程碑项，不显示删除按钮（因为它是自动生成的）
-        const deleteBtn = item.isFromMilestone
+        // 如果是旧版下周计划里的里程碑项，不显示删除按钮（因为它是自动生成的）
+        const deleteBtn = item.isFromMilestone && type !== 'task'
             ? ''
-            : `<button class="item-action-btn delete" onclick="app.deleteItem('${type}', ${item.id})" title="删除">
+            : `<button class="item-action-btn delete" onclick='app.deleteItem("${type}", ${itemIdArg})' title="删除">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -1353,32 +1570,14 @@ class WeeklyReportApp {
         const weekThoughts = storage.getThoughts(this.currentYear, this.currentWeek);
         textarea.value = weekThoughts;
 
-        // 从任务中提取包含"心得"、"体会"、"感悟"等关键词的内容
+        // 从工作项的“心得体会”字段中提取内容，不再从计划或普通工作内容里自动提取
         const taskThoughts = [];
         weekData.tasks.forEach(task => {
-            if (task.content && (
-                task.content.includes('心得') ||
-                task.content.includes('体会') ||
-                task.content.includes('感悟') ||
-                task.content.includes('总结') ||
-                task.content.includes('经验')
-            )) {
+            if (task.reflection) {
                 taskThoughts.push({
                     title: task.title,
-                    content: task.content,
+                    content: task.reflection,
                     projectName: task.projectName || ''
-                });
-            }
-        });
-
-        // 也从收获中提取（排除里程碑类型的计划）
-        weekData.harvests.forEach(harvest => {
-            // 排除里程碑项（isFromMilestone）和未完成任务项（isFromIncomplete）
-            if (harvest.content && !harvest.isFromMilestone && !harvest.isFromIncomplete) {
-                taskThoughts.push({
-                    title: harvest.title,
-                    content: harvest.content,
-                    projectName: harvest.projectName || ''
                 });
             }
         });
