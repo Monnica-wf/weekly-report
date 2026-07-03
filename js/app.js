@@ -606,22 +606,34 @@ class WeeklyReportApp {
      */
     getProjectColor(projectName) {
         const colorPalette = [
-            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },
-            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },
-            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },
-            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },
-            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },
-            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' }
+            { primary: '#ff8b4a', secondary: 'rgba(255, 139, 74, 0.08)' },
+            { primary: '#65f0a6', secondary: 'rgba(101, 240, 166, 0.08)' },
+            { primary: '#b491ff', secondary: 'rgba(180, 145, 255, 0.08)' },
+            { primary: '#ff7ab6', secondary: 'rgba(255, 122, 182, 0.08)' },
+            { primary: '#f5d76e', secondary: 'rgba(245, 215, 110, 0.08)' },
+            { primary: '#4ee7d4', secondary: 'rgba(78, 231, 212, 0.08)' }
         ];
         const key = projectName || '未分类';
-        let hash = 0;
+        const projectNames = this.getAllProjectNames();
+        const index = Math.max(0, projectNames.indexOf(key));
 
-        for (let i = 0; i < key.length; i++) {
-            hash = ((hash << 5) - hash) + key.charCodeAt(i);
-            hash |= 0;
-        }
+        return colorPalette[index % colorPalette.length];
+    }
 
-        return colorPalette[Math.abs(hash) % colorPalette.length];
+    /**
+     * 获取所有项目名称，保证不同模块分配到同一套项目颜色
+     */
+    getAllProjectNames() {
+        const allData = storage.getAllData();
+        const names = new Set();
+
+        Object.values(allData).forEach(weekData => {
+            [...(weekData.tasks || []), ...(weekData.harvests || [])].forEach(item => {
+                names.add(item.projectName || '未分类');
+            });
+        });
+
+        return Array.from(names).sort((a, b) => a.localeCompare(b, 'zh-CN'));
     }
 
     /**
