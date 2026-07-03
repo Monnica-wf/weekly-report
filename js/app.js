@@ -602,6 +602,29 @@ class WeeklyReportApp {
     }
 
     /**
+     * 项目颜色统一入口：本周工作、下周计划、时间线都用同一套规则
+     */
+    getProjectColor(projectName) {
+        const colorPalette = [
+            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },
+            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },
+            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },
+            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },
+            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },
+            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' }
+        ];
+        const key = projectName || '未分类';
+        let hash = 0;
+
+        for (let i = 0; i < key.length; i++) {
+            hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            hash |= 0;
+        }
+
+        return colorPalette[Math.abs(hash) % colorPalette.length];
+    }
+
+    /**
      * 将本周勾选“加入下周计划”的里程碑同步为下一周的本周工作
      */
     syncMilestonesToNextWeekTasks(year, week) {
@@ -1028,27 +1051,6 @@ class WeeklyReportApp {
         const timelineWidth = Math.max(960, totalDays * 118);
         const currentWeekStartPosition = Math.max(0, Math.min(100, ((currentWeekDates.start.getTime() - minTime) / timeRange) * 100));
 
-        // 节点颜色优先使用对应任务自己的颜色，避免同项目节点被统一成一个颜色
-        const colorPalette = [
-            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
-            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
-            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
-            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
-            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
-            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
-        ];
-
-        const getMilestoneColor = (milestone, index) => {
-            if (milestone.taskColor) {
-                return {
-                    primary: milestone.taskColor,
-                    secondary: this.colorWithAlpha(milestone.taskColor, 0.1)
-                };
-            }
-
-            return colorPalette[index % colorPalette.length];
-        };
-
         const milestonePositions = allMilestones.map((milestone, index) => {
             const milestoneTime = new Date(milestone.expectedDate).getTime();
             const position = ((milestoneTime - minTime) / timeRange) * 100;
@@ -1121,7 +1123,7 @@ class WeeklyReportApp {
                             ${milestonePositions.map(pos => {
                                 const milestone = pos.milestone;
                                 const status = this.getMilestoneStatus(milestone);
-                                const projectColor = getMilestoneColor(milestone, pos.index);
+                                const projectColor = this.getProjectColor(milestone.taskProjectName);
                                 const connectorHeight = 20 + pos.cardOffset;
                                 const taskIdArg = JSON.stringify(milestone.taskId);
 
@@ -1268,15 +1270,6 @@ class WeeklyReportApp {
 
         // 按项目分组
         const projectGroups = {};
-        const projectColors = {};
-        const colorPalette = [
-            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
-            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
-            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
-            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
-            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
-            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
-        ];
 
         sortedTasks.forEach(task => {
             const projectKey = task.projectName || '__no_project__';
@@ -1284,7 +1277,7 @@ class WeeklyReportApp {
                 projectGroups[projectKey] = {
                     name: task.projectName || '未分类',
                     tasks: [],
-                    color: colorPalette[Object.keys(projectGroups).length % colorPalette.length]
+                    color: this.getProjectColor(task.projectName)
                 };
             }
             projectGroups[projectKey].tasks.push(task);
@@ -1353,14 +1346,6 @@ class WeeklyReportApp {
 
         // 按项目分组（和本周工作使用相同的颜色系统）
         const projectGroups = {};
-        const colorPalette = [
-            { primary: '#5cb8a8', secondary: 'rgba(92, 184, 168, 0.06)' },  // 暗teal
-            { primary: '#c47a4a', secondary: 'rgba(196, 122, 74, 0.06)' },   // 暗orange
-            { primary: '#7a8ac4', secondary: 'rgba(122, 138, 196, 0.06)' },  // 暗purple
-            { primary: '#5ac48a', secondary: 'rgba(90, 196, 138, 0.06)' },   // 暗green
-            { primary: '#c47a9a', secondary: 'rgba(196, 122, 154, 0.06)' },  // 暗pink
-            { primary: '#5aa8c4', secondary: 'rgba(90, 168, 196, 0.06)' },   // 暗cyan
-        ];
 
         allPlans.forEach(plan => {
             const projectKey = plan.projectName || '__no_project__';
@@ -1368,7 +1353,7 @@ class WeeklyReportApp {
                 projectGroups[projectKey] = {
                     name: plan.projectName || '未分类',
                     plans: [],
-                    color: colorPalette[Object.keys(projectGroups).length % colorPalette.length]
+                    color: this.getProjectColor(plan.projectName)
                 };
             }
             projectGroups[projectKey].plans.push(plan);

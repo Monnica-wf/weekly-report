@@ -78,6 +78,9 @@ body {
 .app-container {
     display: flex;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* ===== 侧边栏 ===== */
@@ -185,6 +188,9 @@ body {
     margin-left: 240px;
     background: var(--bg-secondary);
     min-height: 100vh;
+    min-width: 0;
+    max-width: calc(100vw - 240px);
+    overflow-x: hidden;
 }
 
 /* ===== 顶部导航栏 ===== */
@@ -319,6 +325,9 @@ body {
 
 .content-views {
     padding: 32px 40px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .view {
@@ -1960,6 +1969,7 @@ body {
 
     .main-content {
         margin-left: 200px;
+        max-width: calc(100vw - 200px);
     }
 
     .stats-cards {
@@ -2003,6 +2013,7 @@ body {
 
     .main-content {
         margin-left: 72px;
+        max-width: calc(100vw - 72px);
     }
 
     .top-bar {
@@ -2824,6 +2835,8 @@ body::after {
     border: 1px solid rgba(148, 163, 184, 0.22);
     margin-bottom: 24px;
     overflow: hidden;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .timeline-header {
@@ -2847,6 +2860,9 @@ body::after {
 /* 横向时间轴容器 */
 .timeline-horizontal {
     position: relative;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 0 10px 14px;
     overflow-x: auto;
     overflow-y: auto;
@@ -2860,6 +2876,8 @@ body::after {
 .timeline-scroll-inner {
     position: relative;
     min-width: 100%;
+    max-width: none;
+    box-sizing: border-box;
     padding-top: 12px;
     padding-right: 32px;
     padding-left: 12px;
