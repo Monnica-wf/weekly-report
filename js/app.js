@@ -574,9 +574,10 @@ class WeeklyReportApp {
      * 获取当前应用口径下的周起止日期
      */
     getWeekBoundaryDates(year, week) {
-        const firstDayOfYear = new Date(year, 0, 1);
-        const start = new Date(firstDayOfYear);
-        start.setDate(firstDayOfYear.getDate() + (week - 1) * 7);
+        const jan4 = new Date(year, 0, 4);
+        const jan4Day = jan4.getDay() || 7;
+        const start = new Date(jan4);
+        start.setDate(jan4.getDate() - jan4Day + 1 + (week - 1) * 7);
         start.setHours(0, 0, 0, 0);
 
         const end = new Date(start);

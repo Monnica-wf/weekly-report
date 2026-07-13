@@ -26,10 +26,10 @@ class StorageManager {
      * 获取周的日期范围
      */
     getWeekDateRange(weekNum, year) {
-        const firstDayOfYear = new Date(year, 0, 1);
-        const daysOffset = (weekNum - 1) * 7;
-        const firstDayOfWeek = new Date(firstDayOfYear);
-        firstDayOfWeek.setDate(firstDayOfYear.getDate() + daysOffset);
+        const jan4 = new Date(year, 0, 4);
+        const jan4Day = jan4.getDay() || 7;
+        const firstDayOfWeek = new Date(jan4);
+        firstDayOfWeek.setDate(jan4.getDate() - jan4Day + 1 + (weekNum - 1) * 7);
 
         const lastDayOfWeek = new Date(firstDayOfWeek);
         lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
