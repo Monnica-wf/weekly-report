@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-07-13T10:39:57.467Z",
+  "exportedAt": "2026-07-13T10:45:04.625Z",
   "reports": {
     "2026-W26": {
       "tasks": [
@@ -140,7 +140,7 @@
           "syncKey": "2026-W26:1782389186139.4077:1782395369157.0952",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-25T12:06:26.139Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z"
+          "updatedAt": "2026-07-13T10:44:53.498Z"
         },
         {
           "id": "milestone-2026-W26:1782466291922.5103:1782466258121.449",
@@ -167,7 +167,7 @@
           "syncKey": "2026-W26:1782466291922.5103:1782466258121.449",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:31:31.922Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z"
+          "updatedAt": "2026-07-13T10:44:53.498Z"
         },
         {
           "id": "milestone-2026-W26:1782466703551.872:1782466690119.5361",
@@ -194,7 +194,7 @@
           "syncKey": "2026-W26:1782466703551.872:1782466690119.5361",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:38:23.551Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z"
+          "updatedAt": "2026-07-13T10:44:53.498Z"
         },
         {
           "id": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
@@ -221,7 +221,7 @@
           "syncKey": "2026-W26:1782466815920.8577:1782466801254.9712",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:40:15.920Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z"
+          "updatedAt": "2026-07-13T10:44:53.498Z"
         },
         {
           "id": "plan-2026-W26:incomplete:1782466815920.8577",
@@ -239,7 +239,7 @@
           "ddl": "2026-07-02",
           "milestones": [],
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -284,9 +284,9 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
-          "title": "待开发",
+          "title": "细评",
           "projectName": "企业级香港安全能力接入",
-          "content": "",
+          "content": "来自本周工作：PRD撰写和评审",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
@@ -307,23 +307,54 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:35:37.404Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782389186139.4077:1782395369157.0952",
           "sourcePlanType": "incomplete"
         },
         {
-          "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466703551.872:1782466690119.5361",
-          "title": "成功上线交付",
-          "projectName": "关怀宝开城14城",
-          "content": "",
+          "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449",
+          "title": "组内评审",
+          "projectName": "企业级英文接入",
+          "content": "来自本周工作：配置类转常规类需求",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 100,
+          "progress": 0,
+          "startDate": "2026-07-01",
+          "endDate": null,
+          "ddl": "2026-07-01",
+          "milestones": [],
+          "fromMilestone": false,
+          "isFromMilestone": false,
+          "isSyncedMilestoneTask": false,
+          "sourceWeekId": "2026-W27",
+          "sourceTaskId": 1782466291922.5103,
+          "sourceTaskTitle": "配置类转常规类需求",
+          "sourceMilestoneId": 1782466258121.449,
+          "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449",
+          "milestoneStatus": "pending",
+          "createdAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "fromPlan": true,
+          "isSyncedPlanTask": true,
+          "sourcePlanId": "milestone-2026-W26:1782466291922.5103:1782466258121.449",
+          "sourcePlanType": "incomplete"
+        },
+        {
+          "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466703551.872:1782466690119.5361",
+          "title": "继续跟进",
+          "projectName": "关怀宝开城14城",
+          "content": "来自本周工作：关怀宝开城配置类需求",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p2",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 0,
           "startDate": "2026-07-10",
           "endDate": null,
           "ddl": "2026-07-10",
@@ -338,7 +369,7 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466703551.872:1782466690119.5361",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:37:29.779Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466703551.872:1782466690119.5361",
@@ -346,15 +377,15 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466815920.8577:1782466801254.9712",
-          "title": "完成对比横表",
+          "title": "完成司机侧调研",
           "projectName": "安全工具竞品分析调研",
-          "content": "待沟通",
-          "reflection": "对滴滴的安全产品功能有了更加深刻的认知",
+          "content": "来自本周工作：安全工具竞品分析调研",
+          "reflection": "",
           "category": "c_product",
           "priority": "p1",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 100,
+          "progress": 0,
           "startDate": "2026-06-30",
           "endDate": null,
           "ddl": "2026-06-30",
@@ -369,7 +400,7 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466815920.8577:1782466801254.9712",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:36:44.987Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
@@ -434,7 +465,7 @@
           "syncKey": "2026-W28:1783938766646.732:1783938759542.8257",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:32:46.646Z",
-          "updatedAt": "2026-07-13T10:37:29.779Z"
+          "updatedAt": "2026-07-13T10:44:53.498Z"
         },
         {
           "id": "plan-2026-W28:harvest:1783939101402.2935",
@@ -452,7 +483,7 @@
           "ddl": "2026-07-13",
           "milestones": [],
           "createdAt": "2026-07-13T10:38:21.403Z",
-          "updatedAt": "2026-07-13T10:39:51.363Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -479,7 +510,7 @@
           "ddl": "2026-07-13",
           "milestones": [],
           "createdAt": "2026-07-13T10:34:12.880Z",
-          "updatedAt": "2026-07-13T10:39:51.363Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -522,7 +553,7 @@
           "syncKey": "2026-W29:incomplete:milestone-2026-W28:1783938766646.732:1783938759542.8257",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:34:46.078Z",
-          "updatedAt": "2026-07-13T10:34:46.078Z",
+          "updatedAt": "2026-07-13T10:44:53.499Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W28:1783938766646.732:1783938759542.8257",
@@ -536,5 +567,5 @@
   },
   "notes": {},
   "comments": {},
-  "publishedAt": "2026-07-13T10:39:57.467Z"
+  "publishedAt": "2026-07-13T10:45:04.626Z"
 }
