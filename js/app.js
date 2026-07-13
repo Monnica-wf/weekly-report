@@ -22,7 +22,8 @@ class WeeklyReportApp {
     async init() {
         const importedFromShare = this.importShareFromUrl();
         if (!importedFromShare) {
-            await this.loadPublishedData();
+            const params = new URLSearchParams(window.location.search);
+            await this.loadPublishedData(params.get('load') === 'published');
         }
         this.syncAllMilestonesToNextWeekTasks();
         this.syncAllPlansToNextWeekTasks();
@@ -150,19 +151,22 @@ class WeeklyReportApp {
     /**
      * 加载 GitHub Pages 上发布的数据
      */
-    async loadPublishedData() {
+    async loadPublishedData(force = false) {
         try {
             const response = await fetch(`data/report.json?v=${Date.now()}`, { cache: 'no-store' });
             if (!response.ok) return;
 
             const publishedData = await response.json();
             const publishedVersion = publishedData.publishedAt || publishedData.exportedAt || '';
-            const shouldImport = !storage.hasLocalContent();
+            const shouldImport = force || !storage.hasLocalContent();
 
             if (!shouldImport) return;
 
             storage.importShareData(publishedData);
             storage.setPublishedVersion(publishedVersion);
+            if (force) {
+                history.replaceState(null, '', window.location.pathname + window.location.hash);
+            }
         } catch (e) {
             console.info('未加载公开发布数据:', e.message);
         }
