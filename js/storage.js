@@ -124,7 +124,12 @@ class StorageManager {
         const notes = this.getAllNotes();
         const comments = this.getAllComments();
 
-        return Object.keys(reports).length > 0 ||
+        return Object.values(reports).some(week => {
+            return (week.tasks || []).length > 0 ||
+                (week.harvests || []).length > 0 ||
+                (week.notes || []).length > 0 ||
+                Boolean((week.thoughts || '').trim());
+        }) ||
             Object.keys(notes).some(weekId => notes[weekId].length > 0) ||
             Object.keys(comments).some(weekId => comments[weekId].length > 0);
     }
