@@ -707,6 +707,17 @@ class WeeklyReportApp {
             ...existingManualTasks,
             ...generatedTasks.map(task => ({
                 ...task,
+                ...(existingGeneratedByKey[task.syncKey] || {}),
+                id: task.id,
+                fromMilestone: true,
+                isFromMilestone: false,
+                isSyncedMilestoneTask: true,
+                sourceWeekId: task.sourceWeekId,
+                sourceTaskId: task.sourceTaskId,
+                sourceTaskTitle: task.sourceTaskTitle,
+                sourceMilestoneId: task.sourceMilestoneId,
+                syncKey: task.syncKey,
+                milestoneStatus: task.milestoneStatus,
                 createdAt: existingGeneratedByKey[task.syncKey]?.createdAt || task.createdAt
             }))
         ];
@@ -807,6 +818,17 @@ class WeeklyReportApp {
             ...existingManualTasks,
             ...generatedTasks.map(task => ({
                 ...task,
+                ...(existingGeneratedByKey[task.syncKey] || {}),
+                id: task.id,
+                fromMilestone: false,
+                isFromMilestone: false,
+                isSyncedMilestoneTask: false,
+                fromPlan: true,
+                isSyncedPlanTask: true,
+                sourceWeekId: task.sourceWeekId,
+                sourcePlanId: task.sourcePlanId,
+                sourcePlanType: task.sourcePlanType,
+                syncKey: task.syncKey,
                 createdAt: existingGeneratedByKey[task.syncKey]?.createdAt || task.createdAt
             }))
         ];
