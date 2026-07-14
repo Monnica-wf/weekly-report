@@ -158,7 +158,9 @@ class WeeklyReportApp {
 
             const publishedData = await response.json();
             const publishedVersion = publishedData.publishedAt || publishedData.exportedAt || '';
-            const shouldImport = force || !storage.hasLocalContent();
+            const shouldImport = force ||
+                !storage.hasLocalContent() ||
+                Boolean(publishedVersion && publishedVersion !== storage.getPublishedVersion());
 
             if (!shouldImport) return;
 
