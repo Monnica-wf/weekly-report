@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-07-13T10:45:04.625Z",
+  "exportedAt": "2026-07-14T03:24:26.325Z",
   "reports": {
     "2026-W26": {
       "tasks": [
@@ -140,7 +140,7 @@
           "syncKey": "2026-W26:1782389186139.4077:1782395369157.0952",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-25T12:06:26.139Z",
-          "updatedAt": "2026-07-13T10:44:53.498Z"
+          "updatedAt": "2026-07-14T03:20:55.597Z"
         },
         {
           "id": "milestone-2026-W26:1782466291922.5103:1782466258121.449",
@@ -167,7 +167,7 @@
           "syncKey": "2026-W26:1782466291922.5103:1782466258121.449",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:31:31.922Z",
-          "updatedAt": "2026-07-13T10:44:53.498Z"
+          "updatedAt": "2026-07-14T03:20:55.597Z"
         },
         {
           "id": "milestone-2026-W26:1782466703551.872:1782466690119.5361",
@@ -194,7 +194,7 @@
           "syncKey": "2026-W26:1782466703551.872:1782466690119.5361",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:38:23.551Z",
-          "updatedAt": "2026-07-13T10:44:53.498Z"
+          "updatedAt": "2026-07-14T03:20:55.597Z"
         },
         {
           "id": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
@@ -221,7 +221,7 @@
           "syncKey": "2026-W26:1782466815920.8577:1782466801254.9712",
           "milestoneStatus": "pending",
           "createdAt": "2026-06-26T09:40:15.920Z",
-          "updatedAt": "2026-07-13T10:44:53.498Z"
+          "updatedAt": "2026-07-14T03:20:55.597Z"
         },
         {
           "id": "plan-2026-W26:incomplete:1782466815920.8577",
@@ -239,7 +239,7 @@
           "ddl": "2026-07-02",
           "milestones": [],
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:20:55.597Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -284,15 +284,15 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
-          "title": "细评",
+          "title": "细评通过等开发",
           "projectName": "企业级香港安全能力接入",
-          "content": "来自本周工作：PRD撰写和评审",
+          "content": "",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 0,
+          "progress": 100,
           "startDate": "2026-07-03",
           "endDate": null,
           "ddl": "2026-07-03",
@@ -307,7 +307,7 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:21:22.143Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782389186139.4077:1782395369157.0952",
@@ -315,19 +315,27 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449",
-          "title": "组内评审",
+          "title": "跟进，下周技术侧沟通",
           "projectName": "企业级英文接入",
-          "content": "来自本周工作：配置类转常规类需求",
+          "content": "细评通过",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 0,
+          "progress": 100,
           "startDate": "2026-07-01",
           "endDate": null,
           "ddl": "2026-07-01",
-          "milestones": [],
+          "milestones": [
+            {
+              "id": 1783999314917.5618,
+              "title": "技术侧沟通会议",
+              "expectedDate": "2026-07-13",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -338,7 +346,7 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:44:53.499Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:22:22.991Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466291922.5103:1782466258121.449",
@@ -346,15 +354,15 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466703551.872:1782466690119.5361",
-          "title": "继续跟进",
+          "title": "已上线",
           "projectName": "关怀宝开城14城",
-          "content": "来自本周工作：关怀宝开城配置类需求",
+          "content": "",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 0,
+          "progress": 100,
           "startDate": "2026-07-10",
           "endDate": null,
           "ddl": "2026-07-10",
@@ -369,7 +377,7 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466703551.872:1782466690119.5361",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:23:03.191Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466703551.872:1782466690119.5361",
@@ -377,15 +385,15 @@
         },
         {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782466815920.8577:1782466801254.9712",
-          "title": "完成司机侧调研",
+          "title": "完成对比横表",
           "projectName": "安全工具竞品分析调研",
-          "content": "来自本周工作：安全工具竞品分析调研",
+          "content": "各项功能✖️品牌横表",
           "reflection": "",
           "category": "c_product",
           "priority": "p1",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 0,
+          "progress": 100,
           "startDate": "2026-06-30",
           "endDate": null,
           "ddl": "2026-06-30",
@@ -400,41 +408,14 @@
           "syncKey": "2026-W27:incomplete:milestone-2026-W26:1782466815920.8577:1782466801254.9712",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:27:22.143Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:24:14.133Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
           "sourcePlanType": "incomplete"
         }
       ],
-      "harvests": [
-        {
-          "id": 1783939101402.2935,
-          "title": "技术侧沟通会议，定改动和排期",
-          "projectName": "企业级英文接入",
-          "content": "",
-          "reflection": "",
-          "category": "c_product",
-          "priority": "p2",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 2,
-          "startDate": null,
-          "endDate": null,
-          "ddl": "2026-07-13",
-          "milestones": [
-            {
-              "id": 1783939166938.637,
-              "title": "技术侧会议，定排期",
-              "expectedDate": "2026-07-13",
-              "status": "pending",
-              "addToNextWeek": true
-            }
-          ],
-          "createdAt": "2026-07-13T10:38:21.403Z",
-          "updatedAt": "2026-07-13T10:39:51.362Z"
-        }
-      ],
+      "harvests": [],
       "notes": [],
       "thoughts": ""
     },
@@ -465,34 +446,34 @@
           "syncKey": "2026-W28:1783938766646.732:1783938759542.8257",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:32:46.646Z",
-          "updatedAt": "2026-07-13T10:44:53.498Z"
+          "updatedAt": "2026-07-14T03:24:14.134Z"
         },
         {
-          "id": "plan-2026-W28:harvest:1783939101402.2935",
-          "title": "技术侧沟通会议，定改动和排期",
+          "id": "milestone-2026-W28:plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449:1783999314917.5618",
+          "title": "技术侧沟通会议",
           "projectName": "企业级英文接入",
-          "content": "来自第28周下周计划",
+          "content": "来自本周工作：跟进，下周技术侧沟通",
           "reflection": "",
           "category": "c_product",
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
           "progress": 0,
-          "startDate": null,
+          "startDate": "2026-07-13",
           "endDate": null,
           "ddl": "2026-07-13",
           "milestones": [],
-          "createdAt": "2026-07-13T10:38:21.403Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
-          "fromMilestone": false,
+          "fromMilestone": true,
           "isFromMilestone": false,
-          "isSyncedMilestoneTask": false,
-          "fromPlan": true,
-          "isSyncedPlanTask": true,
+          "isSyncedMilestoneTask": true,
           "sourceWeekId": "2026-W28",
-          "sourcePlanId": 1783939101402.2935,
-          "sourcePlanType": "harvest",
-          "syncKey": "2026-W28:harvest:1783939101402.2935"
+          "sourceTaskId": "plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449",
+          "sourceTaskTitle": "跟进，下周技术侧沟通",
+          "sourceMilestoneId": 1783999314917.5618,
+          "syncKey": "2026-W28:plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449:1783999314917.5618",
+          "milestoneStatus": "pending",
+          "createdAt": "2026-07-14T03:22:22.992Z",
+          "updatedAt": "2026-07-14T03:24:14.134Z"
         },
         {
           "id": "plan-2026-W28:incomplete:1783938766646.732",
@@ -510,7 +491,7 @@
           "ddl": "2026-07-13",
           "milestones": [],
           "createdAt": "2026-07-13T10:34:12.880Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:24:14.134Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -553,7 +534,7 @@
           "syncKey": "2026-W29:incomplete:milestone-2026-W28:1783938766646.732:1783938759542.8257",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-13T10:34:46.078Z",
-          "updatedAt": "2026-07-13T10:44:53.499Z",
+          "updatedAt": "2026-07-14T03:20:55.597Z",
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W28:1783938766646.732:1783938759542.8257",
@@ -567,5 +548,5 @@
   },
   "notes": {},
   "comments": {},
-  "publishedAt": "2026-07-13T10:45:04.626Z"
+  "publishedAt": "2026-07-14T03:24:26.325Z"
 }
