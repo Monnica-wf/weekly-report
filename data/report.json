@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-07-17T09:29:48.395Z",
+  "exportedAt": "2026-07-17T09:35:20.947Z",
   "reports": {
     "2026-W26": {
       "tasks": [
@@ -257,32 +257,6 @@
     "2026-W28": {
       "tasks": [
         {
-          "id": 1783938766646.732,
-          "title": "PRD",
-          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "了解需求 撰写PRD",
-          "reflection": "",
-          "category": "ai",
-          "priority": "p1",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 50,
-          "startDate": null,
-          "endDate": null,
-          "ddl": "2026-07-13",
-          "milestones": [
-            {
-              "id": 1783938759542.8257,
-              "title": "完成PRD",
-              "expectedDate": "2026-07-13",
-              "status": "pending",
-              "addToNextWeek": true
-            }
-          ],
-          "createdAt": "2026-07-13T10:32:46.646Z",
-          "updatedAt": "2026-07-13T10:36:58.364Z"
-        },
-        {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
           "title": "细评通过等开发",
           "projectName": "企业级香港安全能力接入",
@@ -413,6 +387,24 @@
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
           "sourcePlanType": "incomplete"
+        },
+        {
+          "id": 1784280880544.735,
+          "title": "撰写PRD 下周评审",
+          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
+          "content": "",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 50,
+          "startDate": null,
+          "endDate": null,
+          "ddl": "2026-07-14",
+          "milestones": [],
+          "createdAt": "2026-07-17T09:34:40.544Z",
+          "updatedAt": "2026-07-17T09:34:52.008Z"
         }
       ],
       "harvests": [],
@@ -421,6 +413,24 @@
     },
     "2026-W29": {
       "tasks": [
+        {
+          "id": 1784280562010.3188,
+          "title": "核实情况",
+          "projectName": "【漏洞】预约单行程分享可见司机实时位置",
+          "content": "",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p3",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": null,
+          "endDate": null,
+          "ddl": null,
+          "milestones": [],
+          "createdAt": "2026-07-17T09:29:22.010Z",
+          "updatedAt": "2026-07-17T09:29:22.010Z"
+        },
         {
           "id": "milestone-2026-W28:plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449:1783999314917.5618",
           "title": "技术侧沟通会议",
@@ -449,10 +459,10 @@
           "updatedAt": "2026-07-17T09:28:21.410Z"
         },
         {
-          "id": "plan-2026-W28:incomplete:1783938766646.732",
-          "title": "PRD",
+          "id": "plan-2026-W28:incomplete:1784280880544.735",
+          "title": "完成组内评审和细评",
           "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "PRD完成 组内评审和细评完成",
+          "content": "来自第28周下周计划",
           "reflection": "",
           "category": "c_product",
           "priority": "p1",
@@ -461,37 +471,19 @@
           "progress": 100,
           "startDate": null,
           "endDate": null,
-          "ddl": "2026-07-13",
+          "ddl": "2026-07-14",
           "milestones": [],
-          "createdAt": "2026-07-13T10:34:12.880Z",
-          "updatedAt": "2026-07-17T09:27:43.116Z",
+          "createdAt": "2026-07-17T09:34:40.544Z",
+          "updatedAt": "2026-07-17T09:35:16.432Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
           "fromPlan": true,
           "isSyncedPlanTask": true,
           "sourceWeekId": "2026-W28",
-          "sourcePlanId": 1783938766646.732,
+          "sourcePlanId": 1784280880544.735,
           "sourcePlanType": "incomplete",
-          "syncKey": "2026-W28:incomplete:1783938766646.732"
-        },
-        {
-          "id": 1784280562010.3188,
-          "title": "核实情况",
-          "projectName": "【漏洞】预约单行程分享可见司机实时位置",
-          "content": "",
-          "reflection": "",
-          "category": "c_product",
-          "priority": "p3",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 100,
-          "startDate": null,
-          "endDate": null,
-          "ddl": null,
-          "milestones": [],
-          "createdAt": "2026-07-17T09:29:22.010Z",
-          "updatedAt": "2026-07-17T09:29:22.010Z"
+          "syncKey": "2026-W28:incomplete:1784280880544.735"
         }
       ],
       "harvests": [],
@@ -507,5 +499,5 @@
   },
   "notes": {},
   "comments": {},
-  "publishedAt": "2026-07-17T09:29:48.395Z"
+  "publishedAt": "2026-07-17T09:35:20.947Z"
 }
