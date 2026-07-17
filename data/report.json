@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-07-14T03:24:26.325Z",
+  "exportedAt": "2026-07-17T09:29:48.395Z",
   "reports": {
     "2026-W26": {
       "tasks": [
@@ -422,33 +422,6 @@
     "2026-W29": {
       "tasks": [
         {
-          "id": "milestone-2026-W28:1783938766646.732:1783938759542.8257",
-          "title": "完成PRD",
-          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "来自本周工作：PRD",
-          "reflection": "",
-          "category": "ai",
-          "priority": "p1",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 0,
-          "startDate": "2026-07-13",
-          "endDate": null,
-          "ddl": "2026-07-13",
-          "milestones": [],
-          "fromMilestone": true,
-          "isFromMilestone": false,
-          "isSyncedMilestoneTask": true,
-          "sourceWeekId": "2026-W28",
-          "sourceTaskId": 1783938766646.732,
-          "sourceTaskTitle": "PRD",
-          "sourceMilestoneId": 1783938759542.8257,
-          "syncKey": "2026-W28:1783938766646.732:1783938759542.8257",
-          "milestoneStatus": "pending",
-          "createdAt": "2026-07-13T10:32:46.646Z",
-          "updatedAt": "2026-07-14T03:24:14.134Z"
-        },
-        {
           "id": "milestone-2026-W28:plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449:1783999314917.5618",
           "title": "技术侧沟通会议",
           "projectName": "企业级英文接入",
@@ -458,7 +431,7 @@
           "priority": "p2",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 0,
+          "progress": 100,
           "startDate": "2026-07-13",
           "endDate": null,
           "ddl": "2026-07-13",
@@ -473,25 +446,25 @@
           "syncKey": "2026-W28:plan-2026-W27:incomplete:milestone-2026-W26:1782466291922.5103:1782466258121.449:1783999314917.5618",
           "milestoneStatus": "pending",
           "createdAt": "2026-07-14T03:22:22.992Z",
-          "updatedAt": "2026-07-14T03:24:14.134Z"
+          "updatedAt": "2026-07-17T09:28:21.410Z"
         },
         {
           "id": "plan-2026-W28:incomplete:1783938766646.732",
           "title": "PRD",
           "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "了解需求 撰写PRD",
+          "content": "PRD完成 组内评审和细评完成",
           "reflection": "",
-          "category": "ai",
+          "category": "c_product",
           "priority": "p1",
           "tags": [],
           "color": "#0A84FF",
-          "progress": 50,
+          "progress": 100,
           "startDate": null,
           "endDate": null,
           "ddl": "2026-07-13",
           "milestones": [],
           "createdAt": "2026-07-13T10:34:12.880Z",
-          "updatedAt": "2026-07-14T03:24:14.134Z",
+          "updatedAt": "2026-07-17T09:27:43.116Z",
           "fromMilestone": false,
           "isFromMilestone": false,
           "isSyncedMilestoneTask": false,
@@ -501,6 +474,24 @@
           "sourcePlanId": 1783938766646.732,
           "sourcePlanType": "incomplete",
           "syncKey": "2026-W28:incomplete:1783938766646.732"
+        },
+        {
+          "id": 1784280562010.3188,
+          "title": "核实情况",
+          "projectName": "【漏洞】预约单行程分享可见司机实时位置",
+          "content": "",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p3",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": null,
+          "endDate": null,
+          "ddl": null,
+          "milestones": [],
+          "createdAt": "2026-07-17T09:29:22.010Z",
+          "updatedAt": "2026-07-17T09:29:22.010Z"
         }
       ],
       "harvests": [],
@@ -508,39 +499,7 @@
       "thoughts": ""
     },
     "2026-W30": {
-      "tasks": [
-        {
-          "id": "plan-2026-W29:incomplete:milestone-2026-W28:1783938766646.732:1783938759542.8257",
-          "title": "完成PRD",
-          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "来自本周工作：PRD",
-          "reflection": "",
-          "category": "ai",
-          "priority": "p1",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 0,
-          "startDate": "2026-07-13",
-          "endDate": null,
-          "ddl": "2026-07-13",
-          "milestones": [],
-          "fromMilestone": false,
-          "isFromMilestone": false,
-          "isSyncedMilestoneTask": false,
-          "sourceWeekId": "2026-W29",
-          "sourceTaskId": 1783938766646.732,
-          "sourceTaskTitle": "PRD",
-          "sourceMilestoneId": 1783938759542.8257,
-          "syncKey": "2026-W29:incomplete:milestone-2026-W28:1783938766646.732:1783938759542.8257",
-          "milestoneStatus": "pending",
-          "createdAt": "2026-07-13T10:34:46.078Z",
-          "updatedAt": "2026-07-14T03:20:55.597Z",
-          "fromPlan": true,
-          "isSyncedPlanTask": true,
-          "sourcePlanId": "milestone-2026-W28:1783938766646.732:1783938759542.8257",
-          "sourcePlanType": "incomplete"
-        }
-      ],
+      "tasks": [],
       "harvests": [],
       "notes": [],
       "thoughts": ""
@@ -548,5 +507,5 @@
   },
   "notes": {},
   "comments": {},
-  "publishedAt": "2026-07-14T03:24:26.325Z"
+  "publishedAt": "2026-07-17T09:29:48.395Z"
 }
