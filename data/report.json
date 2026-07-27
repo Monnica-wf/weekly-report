@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-07-17T09:35:20.947Z",
+  "exportedAt": "2026-07-27T02:54:51.096Z",
   "reports": {
     "2026-W26": {
       "tasks": [
@@ -257,6 +257,24 @@
     "2026-W28": {
       "tasks": [
         {
+          "id": 1784280880544.735,
+          "title": "撰写PRD 下周评审",
+          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
+          "content": "",
+          "reflection": "",
+          "category": "c_product",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 50,
+          "startDate": null,
+          "endDate": null,
+          "ddl": "2026-07-14",
+          "milestones": [],
+          "createdAt": "2026-07-17T09:34:40.544Z",
+          "updatedAt": "2026-07-17T09:34:52.008Z"
+        },
+        {
           "id": "plan-2026-W27:incomplete:milestone-2026-W26:1782389186139.4077:1782395369157.0952",
           "title": "细评通过等开发",
           "projectName": "企业级香港安全能力接入",
@@ -387,24 +405,6 @@
           "isSyncedPlanTask": true,
           "sourcePlanId": "milestone-2026-W26:1782466815920.8577:1782466801254.9712",
           "sourcePlanType": "incomplete"
-        },
-        {
-          "id": 1784280880544.735,
-          "title": "撰写PRD 下周评审",
-          "projectName": "【谛听-敏感空间】防聚集策略迭代-工作台适配V1.1",
-          "content": "",
-          "reflection": "",
-          "category": "c_product",
-          "priority": "p1",
-          "tags": [],
-          "color": "#0A84FF",
-          "progress": 50,
-          "startDate": null,
-          "endDate": null,
-          "ddl": "2026-07-14",
-          "milestones": [],
-          "createdAt": "2026-07-17T09:34:40.544Z",
-          "updatedAt": "2026-07-17T09:34:52.008Z"
         }
       ],
       "harvests": [],
@@ -491,7 +491,159 @@
       "thoughts": ""
     },
     "2026-W30": {
-      "tasks": [],
+      "tasks": [
+        {
+          "id": 1785120748564.5234,
+          "title": "熟悉AI agent 三个PRD",
+          "projectName": "",
+          "content": "",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 100,
+          "startDate": "2026-07-22",
+          "endDate": "2026-07-24",
+          "ddl": null,
+          "milestones": [],
+          "createdAt": "2026-07-27T02:52:28.564Z",
+          "updatedAt": "2026-07-27T02:52:28.564Z"
+        },
+        {
+          "id": 1785120798902.4404,
+          "title": "PRD",
+          "projectName": "【明镜AI】数据源优化-处置过程小作文结构化",
+          "content": "",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 30,
+          "startDate": null,
+          "endDate": null,
+          "ddl": "2026-07-28",
+          "milestones": [
+            {
+              "id": 1785120787154.9229,
+              "title": "PRD评审",
+              "expectedDate": "2026-07-29",
+              "status": "pending",
+              "addToNextWeek": true
+            }
+          ],
+          "createdAt": "2026-07-27T02:53:18.902Z",
+          "updatedAt": "2026-07-27T02:53:18.902Z"
+        }
+      ],
+      "harvests": [
+        {
+          "id": 1785120881356.9268,
+          "title": "推进细评",
+          "projectName": "【明镜AI】定性Agent&判责Agent V1.0",
+          "content": "",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 0,
+          "startDate": "2026-07-27",
+          "endDate": "2026-07-31",
+          "ddl": "2026-07-31",
+          "milestones": [],
+          "createdAt": "2026-07-27T02:54:41.356Z",
+          "updatedAt": "2026-07-27T02:54:48.496Z"
+        }
+      ],
+      "notes": [],
+      "thoughts": ""
+    },
+    "2026-W31": {
+      "tasks": [
+        {
+          "id": "milestone-2026-W30:1785120798902.4404:1785120787154.9229",
+          "title": "PRD评审",
+          "projectName": "【明镜AI】数据源优化-处置过程小作文结构化",
+          "content": "来自本周工作：PRD",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 0,
+          "startDate": "2026-07-29",
+          "endDate": null,
+          "ddl": "2026-07-29",
+          "milestones": [],
+          "fromMilestone": true,
+          "isFromMilestone": false,
+          "isSyncedMilestoneTask": true,
+          "sourceWeekId": "2026-W30",
+          "sourceTaskId": 1785120798902.4404,
+          "sourceTaskTitle": "PRD",
+          "sourceMilestoneId": 1785120787154.9229,
+          "syncKey": "2026-W30:1785120798902.4404:1785120787154.9229",
+          "milestoneStatus": "pending",
+          "createdAt": "2026-07-27T02:53:18.903Z",
+          "updatedAt": "2026-07-27T02:53:18.903Z"
+        },
+        {
+          "id": "plan-2026-W30:harvest:1785120881356.9268",
+          "title": "推进细评",
+          "projectName": "【明镜AI】定性Agent&判责Agent V1.0",
+          "content": "来自第30周下周计划",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 0,
+          "startDate": "2026-07-27",
+          "endDate": null,
+          "ddl": "2026-07-31",
+          "milestones": [],
+          "createdAt": "2026-07-27T02:54:41.357Z",
+          "updatedAt": "2026-07-27T02:54:41.357Z",
+          "fromMilestone": false,
+          "isFromMilestone": false,
+          "isSyncedMilestoneTask": false,
+          "fromPlan": true,
+          "isSyncedPlanTask": true,
+          "sourceWeekId": "2026-W30",
+          "sourcePlanId": 1785120881356.9268,
+          "sourcePlanType": "harvest",
+          "syncKey": "2026-W30:harvest:1785120881356.9268"
+        },
+        {
+          "id": "plan-2026-W30:incomplete:1785120798902.4404",
+          "title": "PRD",
+          "projectName": "【明镜AI】数据源优化-处置过程小作文结构化",
+          "content": "来自第30周下周计划",
+          "reflection": "",
+          "category": "ai",
+          "priority": "p1",
+          "tags": [],
+          "color": "#0A84FF",
+          "progress": 30,
+          "startDate": null,
+          "endDate": null,
+          "ddl": "2026-07-28",
+          "milestones": [],
+          "createdAt": "2026-07-27T02:53:18.903Z",
+          "updatedAt": "2026-07-27T02:53:18.903Z",
+          "fromMilestone": false,
+          "isFromMilestone": false,
+          "isSyncedMilestoneTask": false,
+          "fromPlan": true,
+          "isSyncedPlanTask": true,
+          "sourceWeekId": "2026-W30",
+          "sourcePlanId": 1785120798902.4404,
+          "sourcePlanType": "incomplete",
+          "syncKey": "2026-W30:incomplete:1785120798902.4404"
+        }
+      ],
       "harvests": [],
       "notes": [],
       "thoughts": ""
@@ -499,5 +651,5 @@
   },
   "notes": {},
   "comments": {},
-  "publishedAt": "2026-07-17T09:35:20.947Z"
+  "publishedAt": "2026-07-27T02:54:51.097Z"
 }
